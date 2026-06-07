@@ -7,7 +7,9 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "fetch-nifty500": "node scripts/fetch-nifty500.js",
-    "fetch-universes": "node scripts/fetch-universes.js"
+    "fetch-universes": "node scripts/fetch-universes.js",
+    "frontend": "cd frontend && npm run dev",
+    "frontend:build": "cd frontend && npm run build"
   },
   "dependencies": {
     "axios": "^1.6.0",
