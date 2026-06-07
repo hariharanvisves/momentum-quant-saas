@@ -2,7 +2,7 @@
 # Deployment Instructions
 
 1. Install NodeJS 18+
-2. Install MongoDB
+2. Copy .env.example to .env and fill in values
 3. npm install
 4. npm start
 
