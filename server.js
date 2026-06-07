@@ -26,6 +26,13 @@ app.post("/api/backtest", handle(async (req, res) => {
   res.json(result)
 }))
 
+app.get("/api/backtests", handle(async (req, res) => {
+  const results = db.prepare(
+    "SELECT id, universe, cagr, sharpe, max_drawdown, total_return, ran_at FROM backtest_results ORDER BY ran_at DESC LIMIT 20"
+  ).all()
+  res.json({ results })
+}))
+
 app.get("/api/universes", handle(async (req, res) => {
   const fs = require("fs")
   const path = require("path")
