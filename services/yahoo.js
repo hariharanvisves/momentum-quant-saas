@@ -37,12 +37,17 @@ async function fetchChart(symbol, { period1 = "2010-01-01", retries = 4 } = {}) 
   for (let i = 0; i < retries; i++) {
     try {
       const opts = getModuleOpts(i)
-      return await yahooFinance.chart(symbol + ".NS", {
+      const timeoutMs = 30000
+      const chartPromise = yahooFinance.chart(symbol + ".NS", {
         period1,
         interval: "1d",
         events: "",
         includePrePost: false,
       }, opts)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout fetching ${symbol}`)), timeoutMs)
+      )
+      return await Promise.race([chartPromise, timeoutPromise])
     } catch (e) {
       if (isRateLimited(e) && i < retries - 1) {
         const backoff = 5000 * (i + 1)
