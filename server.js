@@ -40,7 +40,11 @@ app.get("/api/universes", handle(async (req, res) => {
 
 app.get("/api/scanner", handle(async (req, res) => {
   const universe = req.query.universe || "nifty500"
-  const result = await scanner.scan({ universe })
+  const limit = req.query.limit ? Number(req.query.limit) : null
+  const config = {}
+  if (req.query.topN) config.topN = Number(req.query.topN)
+  if (req.query.lookbacks) config.lookbacks = req.query.lookbacks.split(",").map(Number)
+  const result = await scanner.scan({ universe, limit, config })
   res.json(result)
 }))
 

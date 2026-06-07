@@ -1,25 +1,18 @@
-
-const yahooFinance = require("yahoo-finance2").default
 const fs = require("fs")
 const path = require("path")
-
-yahooFinance.suppressNotices(["ripHistorical"])
-
-// Yahoo blocks bot User-Agents; rotate browser-like UAs
-const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
-]
-
-// Serialize requests, reduce rate limit hits. Try query1 if query2 is blocked.
-yahooFinance.setGlobalConfig({
-  queue: { concurrency: 1, timeout: 60000 },
-  YF_QUERY_HOST: process.env.YF_QUERY_HOST || "query1.finance.yahoo.com",
-})
+const db = require("../db")
+const { fetchChart, delay, isSkippable } = require("./yahoo")
 
 const UNIVERSES_DIR = path.join(__dirname, "..", "data", "universes")
 const DEFAULT_UNIVERSE = "nifty500"
+
+const DEFAULT_CONFIG = {
+  lookbacks: [21, 63, 126, 189],
+  topN: 20,
+  minDataPoints: 200,
+  requestDelayMs: 4000,
+  retries: 4,
+}
 
 function loadUniverse(name = DEFAULT_UNIVERSE) {
   const file = path.join(UNIVERSES_DIR, `${name}.json`)
@@ -27,116 +20,100 @@ function loadUniverse(name = DEFAULT_UNIVERSE) {
   return JSON.parse(fs.readFileSync(file))
 }
 
-const delay = (ms) => new Promise((r) => setTimeout(r, ms))
-
-const isRateLimited = (e) => {
-  const msg = String(e?.message || e || "")
-  return msg.includes("Too Many Requests") || msg.includes("invalid json") || msg.includes("invalid-json")
+function calcMomentum(closes, lookbacks) {
+  return lookbacks.reduce((sum, lb) => {
+    if (lb >= closes.length) return sum
+    const current = closes[closes.length - 1]
+    const past = closes[closes.length - 1 - lb]
+    if (!past || past <= 0) return sum
+    const roc = (current - past) / past
+    return sum + (isFinite(roc) ? roc : 0)
+  }, 0)
 }
 
-function getModuleOpts(uaIndex = 0) {
-  return {
-    fetchOptions: {
-      headers: {
-        "User-Agent": USER_AGENTS[uaIndex % USER_AGENTS.length],
-        Accept: "application/json",
-        "Accept-Language": "en-US,en;q=0.9",
-      },
-    },
-    queue: { concurrency: 1 },
+function calcVolatility(closes) {
+  const logReturns = []
+  for (let i = 1; i < closes.length; i++) {
+    const r = Math.log(closes[i] / closes[i - 1])
+    if (isFinite(r)) logReturns.push(r)
   }
+  if (logReturns.length < 2) return 0
+  const n = logReturns.length
+  const mean = logReturns.reduce((a, b) => a + b, 0) / n
+  const variance = logReturns.reduce((a, r) => a + (r - mean) ** 2, 0) / (n - 1)
+  return Math.sqrt(variance * 252)
 }
-
-async function fetchChart(symbol, retries = 4) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const opts = getModuleOpts(i)
-      return await yahooFinance.chart(symbol + ".NS", {
-        period1: "2010-01-01",
-        interval: "1d",
-        events: "",
-        includePrePost: false,
-      }, opts)
-    } catch (e) {
-      if (isRateLimited(e) && i < retries - 1) {
-        const backoff = 5000 * (i + 1)
-        console.warn(`Rate limited on ${symbol}, retry ${i + 1}/${retries} in ${backoff / 1000}s`)
-        await delay(backoff)
-      } else {
-        throw e
-      }
-    }
-  }
-}
-
-const SCAN_LIMIT = 15
-const REQUEST_DELAY_MS = 4000
 
 async function scan(opts = {}) {
   const universeName = opts.universe || DEFAULT_UNIVERSE
+  const config = { ...DEFAULT_CONFIG, ...opts.config }
+  const limit = opts.limit || null
   const universe = loadUniverse(universeName)
+  const symbols = limit ? universe.slice(0, limit) : universe
   const scores = []
+  let scanned = 0
 
-  // Warm-up delay before first request
   await delay(3000)
 
-  for (const symbol of universe.slice(0, SCAN_LIMIT)) {
+  for (const symbol of symbols) {
     let result
     try {
-      result = await fetchChart(symbol)
+      result = await fetchChart(symbol, { retries: config.retries })
     } catch (e) {
-      if (/delisted|no data|not found/i.test(String(e?.message || ""))) {
+      if (isSkippable(e)) {
         console.warn(`Skip ${symbol}: ${e.message}`)
-        await delay(REQUEST_DELAY_MS)
+        await delay(config.requestDelayMs)
         continue
       }
       throw e
     }
 
     const data = result?.quotes ?? []
-    if (data.length < 200) continue
+    if (data.length < config.minDataPoints) {
+      await delay(config.requestDelayMs)
+      continue
+    }
 
     const closes = data.map((d) => d.close).filter((c) => c != null && c > 0)
+    const momentum = calcMomentum(closes, config.lookbacks)
+    const volatility = calcVolatility(closes)
 
-    // Log returns: more accurate for volatility, time-additive
-    const logReturns = []
-    for (let i = 1; i < closes.length; i++) {
-      const r = Math.log(closes[i] / closes[i - 1])
-      if (isFinite(r)) logReturns.push(r)
-    }
-
-    /** Momentum: ROC (Rate of Change) - exact percentage return over lookback */
-    function mom(lb) {
-      if (lb >= closes.length) return 0
-      const p = closes[closes.length - 1]
-      const pOld = closes[closes.length - 1 - lb]
-      if (!pOld || pOld <= 0) return 0
-      const roc = (p - pOld) / pOld
-      return isFinite(roc) ? roc : 0
-    }
-
-    /** Volatility: annualized full-history (log returns, sample std n-1) */
-    function vol(returns) {
-      if (returns.length < 2) return 0
-      const n = returns.length
-      const mean = returns.reduce((a, b) => a + b, 0) / n
-      const variance = returns.reduce((a, r) => a + (r - mean) ** 2, 0) / (n - 1)
-      return Math.sqrt(variance * 252)
-    }
-
-    const momentum = mom(21) + mom(63) + mom(126) + mom(189)
-    const volatility = vol(logReturns)
-
-    scores.push({ symbol, score: momentum - volatility })
-    await delay(REQUEST_DELAY_MS)
+    scores.push({ symbol, score: momentum - volatility, momentum, volatility })
+    scanned++
+    await delay(config.requestDelayMs)
   }
 
   scores.sort((a, b) => b.score - a.score)
+  const top = scores.slice(0, config.topN)
+
+  const insertScan = db.prepare(`
+    INSERT INTO scan_results (universe, scan_limit, symbols_scanned, config_json)
+    VALUES (?, ?, ?, ?)
+  `)
+  const insertScore = db.prepare(`
+    INSERT INTO scan_scores (scan_id, rank, symbol, score, momentum, volatility)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `)
+
+  const saveScan = db.transaction(() => {
+    const { lastInsertRowid } = insertScan.run(
+      universeName, symbols.length, scanned, JSON.stringify(config)
+    )
+    top.forEach((s, i) => {
+      insertScore.run(lastInsertRowid, i + 1, s.symbol, s.score, s.momentum, s.volatility)
+    })
+    return lastInsertRowid
+  })
+
+  const scanId = saveScan()
 
   return {
-    top20: scores.slice(0, 20),
+    scanId,
+    top20: top,
     universe: universeName,
+    symbolsScanned: scanned,
+    totalInUniverse: symbols.length,
   }
 }
 
-module.exports = { scan }
+module.exports = { scan, calcMomentum, calcVolatility, loadUniverse }
