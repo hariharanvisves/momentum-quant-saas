@@ -32,6 +32,7 @@ const portfolio = require("./services/portfolio")
 const intraday = require("./services/intraday")
 const auth = require("./services/auth")
 const { requireAuth } = require("./middleware/requireAuth")
+const { validateScoring, validateBacktest, validateStrategy } = require("./middleware/validate")
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString(), uptime: process.uptime() })
@@ -94,7 +95,7 @@ const handle = (fn) => (req, res) => {
   })
 }
 
-app.post("/api/backtest", heavyRateLimit, handle(async (req, res) => {
+app.post("/api/backtest", heavyRateLimit, validateBacktest, handle(async (req, res) => {
   const universe = req.body.universe || "nifty500"
   if (!validateUniverse(universe, res)) return
   const result = await backtest.run(req.body)
@@ -141,7 +142,7 @@ app.get("/api/scanner", heavyRateLimit, handle(async (req, res) => {
   res.json(result)
 }))
 
-app.post("/api/score", heavyRateLimit, handle(async (req, res) => {
+app.post("/api/score", heavyRateLimit, validateScoring, handle(async (req, res) => {
   const universe = req.body.universe || "nifty500"
   if (!validateUniverse(universe, res)) return
   const result = await scoring.score(req.body)
@@ -237,7 +238,7 @@ app.get("/api/strategies/:id", handle(async (req, res) => {
   res.json(strategy)
 }))
 
-app.post("/api/strategies", handle(async (req, res) => {
+app.post("/api/strategies", validateStrategy, handle(async (req, res) => {
   const { name, formula, description } = req.body
   if (!name || !formula) return res.status(400).json({ error: "name and formula are required" })
 
@@ -265,7 +266,7 @@ app.post("/api/strategies", handle(async (req, res) => {
   }
 }))
 
-app.put("/api/strategies/:id", handle(async (req, res) => {
+app.put("/api/strategies/:id", validateStrategy, handle(async (req, res) => {
   const { name, formula, description } = req.body
   const existing = db.prepare("SELECT * FROM strategies WHERE id = ?").get(req.params.id)
   if (!existing) return res.status(404).json({ error: "Strategy not found" })
