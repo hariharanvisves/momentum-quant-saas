@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo, useRef, Fragment } from "react"
 import { createChart, LineStyle } from "lightweight-charts"
 import { api } from "../api"
 import HeatmapTable from "./HeatmapTable"
@@ -31,6 +31,12 @@ import TableRow from "@mui/material/TableRow"
 import Card from "@mui/material/Card"
 import CardActionArea from "@mui/material/CardActionArea"
 import CardContent from "@mui/material/CardContent"
+import Dialog from "@mui/material/Dialog"
+import DialogTitle from "@mui/material/DialogTitle"
+import DialogContent from "@mui/material/DialogContent"
+import List from "@mui/material/List"
+import ListItemButton from "@mui/material/ListItemButton"
+import ListItemText from "@mui/material/ListItemText"
 
 const REBAL_OPTIONS = [
   { value: 5, label: "Weekly" },
@@ -129,6 +135,9 @@ export default function BacktestPanel() {
   const [error, setError] = useState(null)
   const [result, setResult] = useState(null)
   const [activeResultTab, setActiveResultTab] = useState("result")
+  const [savedResult, setSavedResult] = useState(null)
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false)
+  const [previousBacktests, setPreviousBacktests] = useState([])
 
   useEffect(() => {
     api.getStrategies().then(data => setStrategies(data.strategies || [])).catch(() => {})
@@ -347,6 +356,15 @@ export default function BacktestPanel() {
           <TextField type="date" size="small" label="End Date"
             value={endDate} onChange={e => setEndDate(e.target.value)}
             InputLabelProps={{ shrink: true }} sx={{ width: 160 }} />
+          <Button variant="outlined" size="small" onClick={async () => {
+            try {
+              const data = await api.getBacktests()
+              setPreviousBacktests(data.results || [])
+              setLoadDialogOpen(true)
+            } catch (e) {}
+          }}>
+            Load Previous
+          </Button>
         </Stack>
       </Paper>
 
@@ -394,7 +412,10 @@ export default function BacktestPanel() {
               <Paper sx={{ p: 2.5 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
                   <Typography variant="subtitle1">Overall Performance</Typography>
-                  <Button variant="outlined" size="small" onClick={downloadResults}>Download CSV</Button>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Button variant="outlined" size="small" onClick={downloadResults}>Download CSV</Button>
+                    <Button variant="outlined" size="small" onClick={() => setSavedResult(result)}>Save for Comparison</Button>
+                  </Box>
                 </Box>
                 <Grid container spacing={1.5}>
                   {metrics.map((m, i) => (
@@ -422,6 +443,59 @@ export default function BacktestPanel() {
                   ))}
                 </Grid>
               </Paper>
+
+              {/* Comparison section */}
+              {savedResult && result && savedResult !== result && (
+                <Paper sx={{ p: 2.5 }}>
+                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                    <Typography variant="subtitle1">Comparison</Typography>
+                    <Button size="small" variant="text" color="error" onClick={() => setSavedResult(null)}>
+                      Clear Comparison
+                    </Button>
+                  </Box>
+                  <Grid container spacing={2}>
+                    <Grid item xs={4}><Typography variant="caption" color="text.secondary">Metric</Typography></Grid>
+                    <Grid item xs={4}>
+                      <Typography variant="caption" color="primary.main" fontWeight={700}>
+                        Saved: {savedResult.universe} ({savedResult.startDate}→{savedResult.endDate})
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={4}>
+                      <Typography variant="caption" color="success.main" fontWeight={700}>Current</Typography>
+                    </Grid>
+                    {[
+                      { label: "CAGR %", key: "cagr", higherBetter: true },
+                      { label: "Total Return %", key: "totalReturn", higherBetter: true },
+                      { label: "Sharpe", key: "sharpe", higherBetter: true },
+                      { label: "Max Drawdown %", key: "maxDrawdown", higherBetter: false },
+                      { label: "Win Rate %", key: "winRate", higherBetter: true },
+                      { label: "Risk:Reward", key: "riskToReward", higherBetter: true },
+                    ].map(({ label, key, higherBetter }) => {
+                      const sv = savedResult[key] ?? 0
+                      const cv = result[key] ?? 0
+                      const savedBetter = higherBetter ? sv > cv : sv < cv
+                      const currentBetter = higherBetter ? cv > sv : cv < sv
+                      return (
+                        <Fragment key={key}>
+                          <Grid item xs={4}>
+                            <Typography variant="body2" color="text.secondary">{label}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Typography variant="body2" sx={{ color: savedBetter ? "success.main" : currentBetter ? "error.main" : "text.primary", fontFamily: "'JetBrains Mono', monospace" }}>
+                              {sv}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Typography variant="body2" sx={{ color: currentBetter ? "success.main" : savedBetter ? "error.main" : "text.primary", fontFamily: "'JetBrains Mono', monospace" }}>
+                              {cv}
+                            </Typography>
+                          </Grid>
+                        </Fragment>
+                      )
+                    })}
+                  </Grid>
+                </Paper>
+              )}
 
               {/* Equity curve */}
               {chartData.length > 0 && (
@@ -467,6 +541,30 @@ export default function BacktestPanel() {
           )}
         </Box>
       )}
+
+      {/* Load Previous Backtest Dialog */}
+      <Dialog open={loadDialogOpen} onClose={() => setLoadDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Load Previous Backtest for Comparison</DialogTitle>
+        <DialogContent>
+          {previousBacktests.length === 0 ? (
+            <Typography color="text.secondary">No previous backtests found.</Typography>
+          ) : (
+            <List dense>
+              {previousBacktests.map(bt => (
+                <ListItemButton key={bt.id} onClick={() => {
+                  setSavedResult({ ...bt, ...(bt.result || {}) })
+                  setLoadDialogOpen(false)
+                }}>
+                  <ListItemText
+                    primary={`${bt.universe} — CAGR: ${bt.cagr}% | Sharpe: ${bt.sharpe}`}
+                    secondary={new Date(bt.ran_at).toLocaleString()}
+                  />
+                </ListItemButton>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Sample strategies */}
       <Paper sx={{ p: 2.5 }}>
