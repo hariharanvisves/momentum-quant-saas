@@ -18,6 +18,8 @@ async function run(params = {}) {
     grid = DEFAULT_GRID,
   } = params
 
+  const safeSymbolLimit = (Number(symbolLimit) > 0) ? Number(symbolLimit) : 15
+
   const results = []
   const combinations = []
 
@@ -37,7 +39,7 @@ async function run(params = {}) {
       console.log(`[${i + 1}/${combinations.length}] topN=${combo.topN} rebal=${combo.rebalanceFrequency} lb=[${combo.lookbacks}]`)
       const result = await backtest.run({
         universe,
-        symbolLimit,
+        symbolLimit: safeSymbolLimit,
         ...combo,
       })
       results.push({

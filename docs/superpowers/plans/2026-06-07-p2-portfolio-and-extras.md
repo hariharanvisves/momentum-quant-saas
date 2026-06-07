@@ -1,6 +1,6 @@
 # P2: Portfolio Manager, SIP Calculator, Intraday Scoring & Extras
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add portfolio tracking, SIP calculator, monthly P&L heatmap, drawdown comparison chart, intraday scoring, preset backtests, basic JWT auth, and uncorrelated asset toggle to complete SigmaScanner feature parity.
 
@@ -63,7 +63,7 @@ momentum-quant-saas/
 - Modify: `frontend/src/components/Layout.jsx`
 - Modify: `frontend/src/styles/globals.css`
 
-- [ ] **Step 1: Add portfolio tables to `db.js`**
+- [x] **Step 1: Add portfolio tables to `db.js`**
 
 Add after the existing `CREATE TABLE IF NOT EXISTS orders` block, inside the same `db.exec()` call:
 
@@ -93,7 +93,7 @@ Add after the existing `CREATE TABLE IF NOT EXISTS orders` block, inside the sam
   CREATE INDEX IF NOT EXISTS idx_portfolio_holdings_portfolio_id ON portfolio_holdings(portfolio_id);
 ```
 
-- [ ] **Step 2: Create `services/portfolio.js`**
+- [x] **Step 2: Create `services/portfolio.js`**
 
 Create file at `services/portfolio.js`:
 
@@ -264,7 +264,7 @@ function createFromScoring(name, universe, scoringResults, capitalPerStock = 500
 module.exports = { list, get, create, update, remove, addHolding, removeHolding, refreshPrices, getPerformance, createFromScoring }
 ```
 
-- [ ] **Step 3: Add portfolio routes to `server.js`**
+- [x] **Step 3: Add portfolio routes to `server.js`**
 
 Add at the top with other requires:
 
@@ -323,7 +323,7 @@ app.post("/api/portfolios/from-scoring", handle(async (req, res) => {
 }))
 ```
 
-- [ ] **Step 4: Add portfolio API methods to `frontend/src/api.js`**
+- [x] **Step 4: Add portfolio API methods to `frontend/src/api.js`**
 
 Add to the `api` object:
 
@@ -346,7 +346,7 @@ Add to the `api` object:
     request("/api/portfolios/from-scoring", { method: "POST", body: JSON.stringify(params) }),
 ```
 
-- [ ] **Step 5: Create `frontend/src/components/PortfolioManager.jsx`**
+- [x] **Step 5: Create `frontend/src/components/PortfolioManager.jsx`**
 
 ```jsx
 import { useState, useEffect } from "react"
@@ -485,7 +485,7 @@ export default function PortfolioManager() {
 }
 ```
 
-- [ ] **Step 6: Create `frontend/src/components/PortfolioDetail.jsx`**
+- [x] **Step 6: Create `frontend/src/components/PortfolioDetail.jsx`**
 
 ```jsx
 import { useState, useEffect } from "react"
@@ -710,7 +710,7 @@ export default function PortfolioDetail({ portfolioId, onBack }) {
 }
 ```
 
-- [ ] **Step 7: Add portfolio tab to Layout and App**
+- [x] **Step 7: Add portfolio tab to Layout and App**
 
 In `frontend/src/components/Layout.jsx`, add to the `tabs` array:
 
@@ -756,7 +756,7 @@ export default function App() {
 }
 ```
 
-- [ ] **Step 8: Add portfolio CSS to `globals.css`**
+- [x] **Step 8: Add portfolio CSS to `globals.css`**
 
 Append to `frontend/src/styles/globals.css`:
 
@@ -846,7 +846,7 @@ input[type="text"]:hover, input[type="text"]:focus {
 }
 ```
 
-- [ ] **Step 9: Test portfolio CRUD**
+- [x] **Step 9: Test portfolio CRUD**
 
 ```bash
 # Create portfolio
@@ -869,7 +869,7 @@ curl http://localhost:3000/api/portfolios
 curl -X DELETE http://localhost:3000/api/portfolios/1
 ```
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add db.js services/portfolio.js server.js frontend/src/api.js frontend/src/App.jsx \
@@ -888,7 +888,7 @@ git commit -m "feat: portfolio manager with CRUD, holdings tracking, P&L, alloca
 
 No backend needed. All calculations happen client-side.
 
-- [ ] **Step 1: Create `frontend/src/components/SipCalculator.jsx`**
+- [x] **Step 1: Create `frontend/src/components/SipCalculator.jsx`**
 
 ```jsx
 import { useState, useMemo } from "react"
@@ -1066,7 +1066,7 @@ export default function SipCalculator() {
 }
 ```
 
-- [ ] **Step 2: Add SIP CSS to `globals.css`**
+- [x] **Step 2: Add SIP CSS to `globals.css`**
 
 Append to `frontend/src/styles/globals.css`:
 
@@ -1083,7 +1083,7 @@ Append to `frontend/src/styles/globals.css`:
 }
 ```
 
-- [ ] **Step 3: Verify SIP calculator renders and computes**
+- [x] **Step 3: Verify SIP calculator renders and computes**
 
 Open `http://localhost:5173`, click "SIP Calculator" tab. Verify:
 - Changing inputs recalculates instantly (no API call)
@@ -1091,7 +1091,7 @@ Open `http://localhost:5173`, click "SIP Calculator" tab. Verify:
 - Donut shows invested vs gains split
 - Metrics show formatted INR values
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add frontend/src/components/SipCalculator.jsx frontend/src/styles/globals.css
@@ -1108,7 +1108,7 @@ git commit -m "feat: SIP calculator with compound growth, yearly bar chart, donu
 - Modify: `frontend/src/components/BacktestPanel.jsx`
 - Modify: `frontend/src/styles/globals.css`
 
-- [ ] **Step 1: Add `monthlyReturns` computation to `services/backtest.js`**
+- [x] **Step 1: Add `monthlyReturns` computation to `services/backtest.js`**
 
 Inside the `run()` function, after the equity curve is built and before the `result` object is assembled, add:
 
@@ -1160,7 +1160,7 @@ Then add `monthlyReturns` to the `result` object:
   }
 ```
 
-- [ ] **Step 2: Create `frontend/src/components/HeatmapTable.jsx`**
+- [x] **Step 2: Create `frontend/src/components/HeatmapTable.jsx`**
 
 ```jsx
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -1247,7 +1247,7 @@ export default function HeatmapTable({ monthlyReturns }) {
 }
 ```
 
-- [ ] **Step 3: Integrate HeatmapTable into BacktestPanel**
+- [x] **Step 3: Integrate HeatmapTable into BacktestPanel**
 
 In `frontend/src/components/BacktestPanel.jsx`, add import:
 
@@ -1263,7 +1263,7 @@ After the equity curve chart section (after the closing `</div>` of `chart-conta
       )}
 ```
 
-- [ ] **Step 4: Add heatmap CSS to `globals.css`**
+- [x] **Step 4: Add heatmap CSS to `globals.css`**
 
 Append to `frontend/src/styles/globals.css`:
 
@@ -1326,7 +1326,7 @@ Append to `frontend/src/styles/globals.css`:
 }
 ```
 
-- [ ] **Step 5: Test heatmap**
+- [x] **Step 5: Test heatmap**
 
 ```bash
 curl -X POST http://localhost:3000/api/backtest \
@@ -1337,7 +1337,7 @@ curl -X POST http://localhost:3000/api/backtest \
 
 Open frontend, run backtest, verify heatmap grid appears below equity chart.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add services/backtest.js frontend/src/components/HeatmapTable.jsx \
@@ -1354,7 +1354,7 @@ git commit -m "feat: monthly P&L heatmap with color-coded year x month grid"
 - Create: `frontend/src/components/DrawdownChart.jsx`
 - Modify: `frontend/src/components/BacktestPanel.jsx`
 
-- [ ] **Step 1: Add drawdown curve computation to `services/backtest.js`**
+- [x] **Step 1: Add drawdown curve computation to `services/backtest.js`**
 
 Inside the `run()` function, after computing `maxDrawdown` and before `dailyReturns`, replace the drawdown loop with one that also builds a curve:
 
@@ -1425,7 +1425,7 @@ Add `drawdownCurve` to the result object (sampled like equityCurve):
   }
 ```
 
-- [ ] **Step 2: Create `frontend/src/components/DrawdownChart.jsx`**
+- [x] **Step 2: Create `frontend/src/components/DrawdownChart.jsx`**
 
 ```jsx
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts"
@@ -1479,7 +1479,7 @@ export default function DrawdownChart({ drawdownCurve }) {
 }
 ```
 
-- [ ] **Step 3: Integrate DrawdownChart into BacktestPanel**
+- [x] **Step 3: Integrate DrawdownChart into BacktestPanel**
 
 In `frontend/src/components/BacktestPanel.jsx`, add import:
 
@@ -1495,7 +1495,7 @@ After the equity curve chart section and HeatmapTable, add:
       )}
 ```
 
-- [ ] **Step 4: Test drawdown chart**
+- [x] **Step 4: Test drawdown chart**
 
 ```bash
 curl -X POST http://localhost:3000/api/backtest \
@@ -1504,7 +1504,7 @@ curl -X POST http://localhost:3000/api/backtest \
 # Verify response includes drawdownCurve array with portfolioDD (and optionally benchmarkDD)
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add services/backtest.js frontend/src/components/DrawdownChart.jsx \
@@ -1524,7 +1524,7 @@ git commit -m "feat: drawdown comparison chart with portfolio vs benchmark DD ov
 - Modify: `frontend/src/api.js`
 - Modify: `frontend/src/styles/globals.css`
 
-- [ ] **Step 1: Create `data/presets.json`**
+- [x] **Step 1: Create `data/presets.json`**
 
 ```json
 [
@@ -1597,7 +1597,7 @@ git commit -m "feat: drawdown comparison chart with portfolio vs benchmark DD ov
 ]
 ```
 
-- [ ] **Step 2: Add presets endpoint to `server.js`**
+- [x] **Step 2: Add presets endpoint to `server.js`**
 
 ```js
 app.get("/api/presets", handle(async (req, res) => {
@@ -1610,7 +1610,7 @@ app.get("/api/presets", handle(async (req, res) => {
 }))
 ```
 
-- [ ] **Step 3: Add presets API method to `frontend/src/api.js`**
+- [x] **Step 3: Add presets API method to `frontend/src/api.js`**
 
 Add to the `api` object:
 
@@ -1618,7 +1618,7 @@ Add to the `api` object:
   getPresets: () => request("/api/presets"),
 ```
 
-- [ ] **Step 4: Create `frontend/src/components/PresetCards.jsx`**
+- [x] **Step 4: Create `frontend/src/components/PresetCards.jsx`**
 
 ```jsx
 import { useState, useEffect } from "react"
@@ -1658,7 +1658,7 @@ export default function PresetCards({ onSelect }) {
 }
 ```
 
-- [ ] **Step 5: Integrate PresetCards into BacktestPanel**
+- [x] **Step 5: Integrate PresetCards into BacktestPanel**
 
 In `frontend/src/components/BacktestPanel.jsx`, add import:
 
@@ -1683,7 +1683,7 @@ Below the controls div and before the error display, add:
       {!result && <PresetCards onSelect={handlePresetSelect} />}
 ```
 
-- [ ] **Step 6: Add preset CSS to `globals.css`**
+- [x] **Step 6: Add preset CSS to `globals.css`**
 
 Append to `frontend/src/styles/globals.css`:
 
@@ -1736,7 +1736,7 @@ Append to `frontend/src/styles/globals.css`:
 }
 ```
 
-- [ ] **Step 7: Test presets**
+- [x] **Step 7: Test presets**
 
 ```bash
 curl http://localhost:3000/api/presets
@@ -1745,7 +1745,7 @@ curl http://localhost:3000/api/presets
 
 Open frontend, click Backtest tab. Verify preset cards appear below form. Click one and confirm form fields fill in.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add data/presets.json server.js frontend/src/api.js \
@@ -1764,7 +1764,7 @@ git commit -m "feat: preset backtest strategies with auto-fill cards"
 - Create: `frontend/src/components/IntradayScoring.jsx`
 - Modify: `frontend/src/api.js`
 
-- [ ] **Step 1: Create `services/intraday.js`**
+- [x] **Step 1: Create `services/intraday.js`**
 
 ```js
 const yahooFinance = require("yahoo-finance2").default
@@ -1895,7 +1895,7 @@ async function score(params = {}) {
 module.exports = { score }
 ```
 
-- [ ] **Step 2: Add intraday route to `server.js`**
+- [x] **Step 2: Add intraday route to `server.js`**
 
 Add at top:
 
@@ -1912,7 +1912,7 @@ app.post("/api/score/intraday", handle(async (req, res) => {
 }))
 ```
 
-- [ ] **Step 3: Add intraday API method to `frontend/src/api.js`**
+- [x] **Step 3: Add intraday API method to `frontend/src/api.js`**
 
 Add to the `api` object:
 
@@ -1921,7 +1921,7 @@ Add to the `api` object:
     request("/api/score/intraday", { method: "POST", body: JSON.stringify(params) }),
 ```
 
-- [ ] **Step 4: Create `frontend/src/components/IntradayScoring.jsx`**
+- [x] **Step 4: Create `frontend/src/components/IntradayScoring.jsx`**
 
 ```jsx
 import { useState } from "react"
@@ -2097,7 +2097,7 @@ export default function IntradayScoring() {
 }
 ```
 
-- [ ] **Step 5: Add intraday CSS to `globals.css`**
+- [x] **Step 5: Add intraday CSS to `globals.css`**
 
 Append to `frontend/src/styles/globals.css`:
 
@@ -2153,7 +2153,7 @@ Append to `frontend/src/styles/globals.css`:
 }
 ```
 
-- [ ] **Step 6: Test intraday scoring**
+- [x] **Step 6: Test intraday scoring**
 
 ```bash
 curl -X POST http://localhost:3000/api/score/intraday \
@@ -2162,7 +2162,7 @@ curl -X POST http://localhost:3000/api/score/intraday \
 # Verify response includes results with perf30, perf60, perf90, vol30, vol60, price
 ```
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add services/intraday.js server.js frontend/src/api.js \
@@ -2187,13 +2187,13 @@ git commit -m "feat: intraday scoring with minute-based performance and volatili
 - Modify: `frontend/src/api.js`
 - Modify: `frontend/src/styles/globals.css`
 
-- [ ] **Step 1: Install dependencies**
+- [x] **Step 1: Install dependencies**
 
 ```bash
 npm install jsonwebtoken bcryptjs
 ```
 
-- [ ] **Step 2: Add users and sessions tables to `db.js`**
+- [x] **Step 2: Add users and sessions tables to `db.js`**
 
 Add inside the `db.exec()` block:
 
@@ -2218,7 +2218,7 @@ Add inside the `db.exec()` block:
   CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 ```
 
-- [ ] **Step 3: Create `services/auth.js`**
+- [x] **Step 3: Create `services/auth.js`**
 
 ```js
 const bcrypt = require("bcryptjs")
@@ -2304,7 +2304,7 @@ function invalidateSession(token) {
 module.exports = { register, login, verifyToken, getUser, invalidateSession, JWT_SECRET }
 ```
 
-- [ ] **Step 4: Create `middleware/requireAuth.js`**
+- [x] **Step 4: Create `middleware/requireAuth.js`**
 
 Create directory and file:
 
@@ -2353,7 +2353,7 @@ function optionalAuth(req, res, next) {
 module.exports = { requireAuth, optionalAuth }
 ```
 
-- [ ] **Step 5: Add auth routes to `server.js`**
+- [x] **Step 5: Add auth routes to `server.js`**
 
 Add imports at top:
 
@@ -2397,7 +2397,7 @@ app.post("/api/portfolios", optionalAuth, handle(async (req, res) => {
 }))
 ```
 
-- [ ] **Step 6: Add auth API methods to `frontend/src/api.js`**
+- [x] **Step 6: Add auth API methods to `frontend/src/api.js`**
 
 Replace the `request` function to support auth tokens:
 
@@ -2490,7 +2490,7 @@ export const api = {
 }
 ```
 
-- [ ] **Step 7: Create `frontend/src/contexts/AuthContext.jsx`**
+- [x] **Step 7: Create `frontend/src/contexts/AuthContext.jsx`**
 
 ```jsx
 import { createContext, useContext, useState, useEffect } from "react"
@@ -2554,7 +2554,7 @@ export function useAuth() {
 }
 ```
 
-- [ ] **Step 8: Create `frontend/src/components/LoginPage.jsx`**
+- [x] **Step 8: Create `frontend/src/components/LoginPage.jsx`**
 
 ```jsx
 import { useState } from "react"
@@ -2621,7 +2621,7 @@ export default function LoginPage({ onSwitchToRegister }) {
 }
 ```
 
-- [ ] **Step 9: Create `frontend/src/components/RegisterPage.jsx`**
+- [x] **Step 9: Create `frontend/src/components/RegisterPage.jsx`**
 
 ```jsx
 import { useState } from "react"
@@ -2704,7 +2704,7 @@ export default function RegisterPage({ onSwitchToLogin }) {
 }
 ```
 
-- [ ] **Step 10: Update `frontend/src/App.jsx` with auth**
+- [x] **Step 10: Update `frontend/src/App.jsx` with auth**
 
 ```jsx
 import { useState } from "react"
@@ -2756,7 +2756,7 @@ export default function App() {
 }
 ```
 
-- [ ] **Step 11: Update Layout to show user info and logout**
+- [x] **Step 11: Update Layout to show user info and logout**
 
 In `frontend/src/components/Layout.jsx`:
 
@@ -2806,7 +2806,7 @@ export default function Layout({ activeTab, onTabChange, user, onLogout, childre
 }
 ```
 
-- [ ] **Step 12: Add auth CSS to `globals.css`**
+- [x] **Step 12: Add auth CSS to `globals.css`**
 
 Append to `frontend/src/styles/globals.css`:
 
@@ -2943,7 +2943,7 @@ Append to `frontend/src/styles/globals.css`:
 }
 ```
 
-- [ ] **Step 13: Add JWT_SECRET to `.env.example`**
+- [x] **Step 13: Add JWT_SECRET to `.env.example`**
 
 Append to `.env.example`:
 
@@ -2952,7 +2952,7 @@ Append to `.env.example`:
 JWT_SECRET=change-this-to-a-random-string
 ```
 
-- [ ] **Step 14: Test auth flow**
+- [x] **Step 14: Test auth flow**
 
 ```bash
 # Register
@@ -2977,7 +2977,7 @@ curl -X POST http://localhost:3000/api/auth/register \
 # Should return error "Email already registered"
 ```
 
-- [ ] **Step 15: Commit**
+- [x] **Step 15: Commit**
 
 ```bash
 git add db.js services/auth.js middleware/requireAuth.js server.js package.json package-lock.json \
@@ -2995,7 +2995,7 @@ git commit -m "feat: JWT auth with register, login, protected routes, plan-based
 - Modify: `services/backtest.js`
 - Modify: `frontend/src/components/BacktestPanel.jsx`
 
-- [ ] **Step 1: Add uncorrelated asset logic to `services/backtest.js`**
+- [x] **Step 1: Add uncorrelated asset logic to `services/backtest.js`**
 
 In the `run()` function, destructure the new param:
 
@@ -3135,7 +3135,7 @@ After the regime check (where holdings are reduced to half), add:
       }
 ```
 
-- [ ] **Step 2: Update BacktestPanel with uncorrelated asset toggle**
+- [x] **Step 2: Update BacktestPanel with uncorrelated asset toggle**
 
 In `frontend/src/components/BacktestPanel.jsx`, add state:
 
@@ -3182,7 +3182,7 @@ After the existing controls, add the toggle UI:
         )}
 ```
 
-- [ ] **Step 3: Test uncorrelated asset backtest**
+- [x] **Step 3: Test uncorrelated asset backtest**
 
 ```bash
 curl -X POST http://localhost:3000/api/backtest \
@@ -3197,7 +3197,7 @@ curl -X POST http://localhost:3000/api/backtest \
 # Compare CAGR/Sharpe with same params but uncorrelatedAsset: null
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add services/backtest.js frontend/src/components/BacktestPanel.jsx

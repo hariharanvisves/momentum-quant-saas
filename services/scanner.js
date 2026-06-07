@@ -2,21 +2,29 @@ const fs = require("fs")
 const path = require("path")
 const db = require("../db")
 const { fetchChart, delay, isSkippable } = require("./yahoo")
+const { computeAll } = require("./factors")
+const { parse: parseFormula } = require("./formula")
 
 const UNIVERSES_DIR = path.join(__dirname, "..", "data", "universes")
 const DEFAULT_UNIVERSE = "nifty500"
+
+function appError(message, status = 400) {
+  const err = new Error(message)
+  err.status = status
+  return err
+}
 
 const DEFAULT_CONFIG = {
   lookbacks: [21, 63, 126, 189],
   topN: 20,
   minDataPoints: 200,
-  requestDelayMs: 4000,
+  requestDelayMs: 300,
   retries: 4,
 }
 
 function loadUniverse(name = DEFAULT_UNIVERSE) {
   const file = path.join(UNIVERSES_DIR, `${name}.json`)
-  if (!fs.existsSync(file)) throw new Error(`Unknown universe: ${name}`)
+  if (!fs.existsSync(file)) throw appError(`Unknown universe: ${name}`)
   return JSON.parse(fs.readFileSync(file))
 }
 
@@ -44,16 +52,47 @@ function calcVolatility(closes) {
   return Math.sqrt(variance * 252)
 }
 
+/**
+ * Score a single stock using either a compiled formula or the legacy method.
+ */
+function scoreOne(closes, compiledFormula, lookbacks) {
+  if (compiledFormula) {
+    const factorValues = computeAll(closes)
+    try {
+      return {
+        score: compiledFormula.evaluate(factorValues),
+        momentum: factorValues["6 month performance"] || 0,
+        volatility: factorValues["6 month volatility"] || 0,
+      }
+    } catch {
+      return null
+    }
+  }
+
+  const momentum = calcMomentum(closes, lookbacks)
+  const volatility = calcVolatility(closes)
+  return {
+    score: momentum - volatility,
+    momentum,
+    volatility,
+  }
+}
+
 async function scan(opts = {}) {
   const universeName = opts.universe || DEFAULT_UNIVERSE
   const config = { ...DEFAULT_CONFIG, ...opts.config }
   const limit = opts.limit || null
+  const formula = opts.formula || null
   const universe = loadUniverse(universeName)
   const symbols = limit ? universe.slice(0, limit) : universe
+
+  let compiledFormula = null
+  if (formula) {
+    compiledFormula = parseFormula(formula)
+  }
+
   const scores = []
   let scanned = 0
-
-  await delay(3000)
 
   for (const symbol of symbols) {
     let result
@@ -62,7 +101,6 @@ async function scan(opts = {}) {
     } catch (e) {
       if (isSkippable(e)) {
         console.warn(`Skip ${symbol}: ${e.message}`)
-        await delay(config.requestDelayMs)
         continue
       }
       throw e
@@ -70,15 +108,19 @@ async function scan(opts = {}) {
 
     const data = result?.quotes ?? []
     if (data.length < config.minDataPoints) {
-      await delay(config.requestDelayMs)
       continue
     }
 
     const closes = data.map((d) => d.close).filter((c) => c != null && c > 0)
-    const momentum = calcMomentum(closes, config.lookbacks)
-    const volatility = calcVolatility(closes)
+    if (closes.length < config.minDataPoints) {
+      continue
+    }
+    const scored = scoreOne(closes, compiledFormula, config.lookbacks)
+    if (!scored) {
+      continue
+    }
 
-    scores.push({ symbol, score: momentum - volatility, momentum, volatility })
+    scores.push({ symbol, ...scored })
     scanned++
     await delay(config.requestDelayMs)
   }
@@ -95,9 +137,11 @@ async function scan(opts = {}) {
     VALUES (?, ?, ?, ?, ?, ?)
   `)
 
+  const configJson = JSON.stringify({ ...config, formula })
+
   const saveScan = db.transaction(() => {
     const { lastInsertRowid } = insertScan.run(
-      universeName, symbols.length, scanned, JSON.stringify(config)
+      universeName, symbols.length, scanned, configJson
     )
     top.forEach((s, i) => {
       insertScore.run(lastInsertRowid, i + 1, s.symbol, s.score, s.momentum, s.volatility)

@@ -21,7 +21,7 @@
 
 ### Steps
 
-- [ ] 1.1 Create `services/factors.js` with the full factor library.
+- [x] 1.1 Create `services/factors.js` with the full factor library.
 
 The factor library computes raw numeric values from a closing-price array. Each factor function takes `closes` (array of numbers) and returns a single number. NaN/Infinity results return 0.
 
@@ -124,7 +124,7 @@ module.exports = {
 }
 ```
 
-- [ ] 1.2 Verify the module loads without errors.
+- [x] 1.2 Verify the module loads without errors.
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -151,7 +151,7 @@ Expected: prints factor count (8), two numeric values, and `OK`.
 
 ### Steps
 
-- [ ] 2.1 Create `services/formula.js` with the formula parser and safe evaluator.
+- [x] 2.1 Create `services/formula.js` with the formula parser and safe evaluator.
 
 The parser works in two phases:
 1. **Tokenize**: replace known factor names with placeholder tokens `__F0__`, `__F1__`, ... and extract percentage-weight prefixes (`60% *`). Produces a token list and a factor map.
@@ -394,7 +394,7 @@ function evalExpr(exprStr) {
 module.exports = { parse, FormulaError }
 ```
 
-- [ ] 2.2 Verify the parser handles all formula patterns.
+- [x] 2.2 Verify the parser handles all formula patterns.
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -434,7 +434,7 @@ console.log('OK');
 
 Expected: all test results match expected values, prints `OK`.
 
-- [ ] 2.3 Verify parse errors throw properly.
+- [x] 2.3 Verify parse errors throw properly.
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -461,7 +461,7 @@ Expected: three `FormulaError` catches, prints `OK`.
 
 ### Steps
 
-- [ ] 3.1 Create `services/scoring.js` that orchestrates formula scoring across a universe.
+- [x] 3.1 Create `services/scoring.js` that orchestrates formula scoring across a universe.
 
 This service: loads universe symbols, fetches price data for each, computes factor values via `factors.js`, evaluates the formula via `formula.js`, filters by sector/price, ranks, and returns paginated results.
 
@@ -653,7 +653,7 @@ async function score(opts = {}) {
 module.exports = { score }
 ```
 
-- [ ] 3.2 Verify the module loads and the `score` function signature is correct (don't run a full scan -- just validate imports).
+- [x] 3.2 Verify the module loads and the `score` function signature is correct (don't run a full scan -- just validate imports).
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -677,7 +677,7 @@ Expected: `score is function: true` and `OK`.
 
 ### Steps
 
-- [ ] 4.1 Add the `strategies` table to `db.js`.
+- [x] 4.1 Add the `strategies` table to `db.js`.
 
 Add this SQL to the `db.exec()` block in `db.js`, after the existing `CREATE TABLE` statements (before the closing `` ` ``):
 
@@ -758,7 +758,7 @@ db.exec(`
 `)
 ```
 
-- [ ] 4.2 Add strategy CRUD endpoints to `server.js`.
+- [x] 4.2 Add strategy CRUD endpoints to `server.js`.
 
 Add these 4 endpoints after the existing `app.get("/api/scans/:id", ...)` block and before the `const PORT = ...` line:
 
@@ -841,7 +841,7 @@ app.delete("/api/strategies/:id", handle(async (req, res) => {
 }))
 ```
 
-- [ ] 4.3 Verify the strategies table is created and CRUD works.
+- [x] 4.3 Verify the strategies table is created and CRUD works.
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -882,7 +882,7 @@ Expected: all operations succeed, prints `OK`.
 
 ### Steps
 
-- [ ] 5.1 Rewrite `services/backtest.js` to accept a formula string and compute 11 SigmaScanner-equivalent metrics.
+- [x] 5.1 Rewrite `services/backtest.js` to accept a formula string and compute 11 SigmaScanner-equivalent metrics.
 
 The key changes:
 1. Accept `formula` param (optional, falls back to legacy `momentum - volatility`)
@@ -1216,7 +1216,7 @@ async function run(params = {}) {
 module.exports = { run, computeMetrics, scoreStock }
 ```
 
-- [ ] 5.2 Verify the module loads and exports are correct.
+- [x] 5.2 Verify the module loads and exports are correct.
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -1230,7 +1230,7 @@ console.log('OK');
 
 Expected: all three are `function`, prints `OK`.
 
-- [ ] 5.3 Unit-test `computeMetrics` with synthetic data.
+- [x] 5.3 Unit-test `computeMetrics` with synthetic data.
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -1276,7 +1276,7 @@ Expected: winRate 60, positive avgWinnersROI, negative avgLosersROI, biggestWinn
 
 ### Steps
 
-- [ ] 6.1 Add `POST /api/score` endpoint to `server.js`.
+- [x] 6.1 Add `POST /api/score` endpoint to `server.js`.
 
 Add this after the existing `app.get("/api/scanner", ...)` block (around line 56) and before `app.post("/api/optimize", ...)`:
 
@@ -1316,7 +1316,7 @@ app.post("/api/score", handle(async (req, res) => {
 }))
 ```
 
-- [ ] 6.2 Also update the existing `POST /api/backtest` endpoint to pass through any `formula` param. **No change needed** -- it already does `backtest.run(req.body)` which passes all body params, and the new `backtest.js` accepts `formula` from the params object. Verify this is the case:
+- [x] 6.2 Also update the existing `POST /api/backtest` endpoint to pass through any `formula` param. **No change needed** -- it already does `backtest.run(req.body)` which passes all body params, and the new `backtest.js` accepts `formula` from the params object. Verify this is the case:
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -1341,7 +1341,7 @@ Expected: `Backtest passes req.body: true` and `OK`.
 
 ### Steps
 
-- [ ] 7.1 Update `scanner.js` to accept an optional `formula` parameter and delegate to the scoring engine when provided.
+- [x] 7.1 Update `scanner.js` to accept an optional `formula` parameter and delegate to the scoring engine when provided.
 
 The scanner keeps its existing interface for backward compatibility. When `opts.formula` is provided, it delegates to the scoring service instead of using the hardcoded momentum-volatility formula. When no formula is provided, behavior is identical to before.
 
@@ -1510,7 +1510,7 @@ async function scan(opts = {}) {
 module.exports = { scan, calcMomentum, calcVolatility, loadUniverse }
 ```
 
-- [ ] 7.2 Verify backward compatibility -- the module still exports the same interface.
+- [x] 7.2 Verify backward compatibility -- the module still exports the same interface.
 
 ```bash
 cd /Users/hari-11966/Desktop/momentum-quant-saas && node -e "
@@ -1527,7 +1527,7 @@ console.log('OK');
 
 Expected: all 4 functions exported, nifty50 has 50 symbols, prints `OK`.
 
-- [ ] 7.3 Also update `GET /api/scanner` in `server.js` to pass through a `formula` query param.
+- [x] 7.3 Also update `GET /api/scanner` in `server.js` to pass through a `formula` query param.
 
 Add `formula` extraction to the existing scanner endpoint. Change the scanner route handler from:
 
@@ -1627,3 +1627,49 @@ score OK: true
 calcMomentum OK: true
 ALL CHECKS PASSED
 ```
+
+---
+
+## Completion Record
+
+**Status:** ✅ COMPLETE — 2026-06-07
+
+All 18 steps implemented and verified. Verification checklist passed.
+
+### Deviations & fixes applied during implementation
+
+| # | Where | Issue | Fix |
+|---|-------|-------|-----|
+| 1 | `backtest.js` | `selectedSet` dead variable (declared but never used) | Removed |
+| 2 | `backtest.js` | `isSkippable` imported but never called | Removed from destructure |
+| 3 | `server.js` `POST /api/strategies` | Duplicate name fell through to 503 instead of returning a clear error | Added `e.code === 'SQLITE_CONSTRAINT_UNIQUE'` catch → 409 |
+| 4 | `scanner.js` / `scoring.js` | `requestDelayMs` was 4000ms + 3s warmup → NIFTY 50 took ~200s | Dropped to 300ms, removed warmup; skipped-symbol paths no longer delay |
+
+### Additional work beyond the plan
+
+| What | Files |
+|------|-------|
+| **Frontend wired** — formula input on Scanner + Backtest, 12-metric display on Backtest, full Strategies CRUD tab with example chips | `frontend/src/api.js`, `ScannerPanel.jsx`, `BacktestPanel.jsx`, `StrategiesPanel.jsx` (new), `Layout.jsx`, `App.jsx` |
+| **Validation messages** — granular per-field errors ("Name is required" / "Formula is required" / "Name and formula are required") | `StrategiesPanel.jsx` |
+| **Frontend built** into `public/` | `public/assets/index-*.{js,css}` |
+
+### Final file inventory
+
+| File | Status | Notes |
+|------|--------|-------|
+| `services/factors.js` | ✅ NEW | 8 factors: 1/3/6/9/12m perf + 1/3/6m vol |
+| `services/formula.js` | ✅ NEW | Recursive-descent parser, `%` weight syntax, `FormulaError` |
+| `services/scoring.js` | ✅ NEW | Universe scoring with pagination + price filters |
+| `services/scanner.js` | ✅ UPDATED | Optional `formula` param, legacy fallback, 300ms delay |
+| `services/backtest.js` | ✅ REWRITTEN | `formula` param, trade tracking, 14 metric fields |
+| `db.js` | ✅ UPDATED | `strategies` table (id, name, formula, description, timestamps) |
+| `server.js` | ✅ UPDATED | `POST /api/score`, 5× strategy CRUD routes, formula on scanner, 409 on dup name |
+| `frontend/src/api.js` | ✅ UPDATED | `scan(formula)`, `score()`, strategy CRUD methods |
+| `frontend/src/components/ScannerPanel.jsx` | ✅ UPDATED | Formula input wired |
+| `frontend/src/components/BacktestPanel.jsx` | ✅ UPDATED | Formula input + 12 metric cards |
+| `frontend/src/components/StrategiesPanel.jsx` | ✅ NEW | Full CRUD UI with example chips |
+| `frontend/src/components/Layout.jsx` | ✅ UPDATED | Strategies tab added (5 tabs total) |
+| `frontend/src/App.jsx` | ✅ UPDATED | Strategies tab routed |
+| `frontend/src/styles/globals.css` | ✅ UPDATED | `.formula-input`, `.example-chip`, `.action-btn`, strategy form styles |
+| `public/` | ✅ REBUILT | Production bundle updated |
+

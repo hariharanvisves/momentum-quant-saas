@@ -15,5 +15,14 @@ export default defineConfig({
   build: {
     outDir: "../public",
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom"],
+          "vendor-mui": ["@mui/material", "@emotion/react", "@emotion/styled"],
+          "vendor-charts": ["lightweight-charts", "@mui/x-charts"],
+        },
+      },
+    },
   },
 })

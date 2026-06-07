@@ -1,0 +1,68 @@
+[
+  {
+    "id": "momentum-classic",
+    "name": "Classic Momentum",
+    "description": "Multi-lookback momentum minus volatility. The original factor strategy.",
+    "universe": "nifty200",
+    "topN": 15,
+    "rebalanceFrequency": 21,
+    "lookbacks": [21, 63, 126, 189],
+    "symbolLimit": 50,
+    "initialCapital": 1000000
+  },
+  {
+    "id": "aggressive-momentum",
+    "name": "Aggressive Momentum",
+    "description": "Short lookbacks, frequent rebalancing, concentrated portfolio.",
+    "universe": "nifty500",
+    "topN": 10,
+    "rebalanceFrequency": 10,
+    "lookbacks": [10, 21, 42, 63],
+    "symbolLimit": 100,
+    "initialCapital": 1000000
+  },
+  {
+    "id": "conservative-momentum",
+    "name": "Conservative Momentum",
+    "description": "Long lookbacks, wider portfolio, less frequent rebalancing.",
+    "universe": "nifty100",
+    "topN": 20,
+    "rebalanceFrequency": 42,
+    "lookbacks": [63, 126, 189, 252],
+    "symbolLimit": 50,
+    "initialCapital": 1000000
+  },
+  {
+    "id": "large-cap-quality",
+    "name": "Large Cap Quality",
+    "description": "NIFTY 50 only. Low volatility momentum filter for blue chips.",
+    "universe": "nifty50",
+    "topN": 10,
+    "rebalanceFrequency": 21,
+    "lookbacks": [63, 126, 189, 252],
+    "symbolLimit": 50,
+    "initialCapital": 1000000
+  },
+  {
+    "id": "mid-cap-hunter",
+    "name": "Mid Cap Hunter",
+    "description": "Broad NIFTY 500 scan targeting high-momentum mid-cap names.",
+    "universe": "nifty500",
+    "topN": 15,
+    "rebalanceFrequency": 21,
+    "lookbacks": [21, 63, 126, 189],
+    "symbolLimit": 200,
+    "initialCapital": 1000000
+  },
+  {
+    "id": "weekly-rebal",
+    "name": "Weekly Rebalance",
+    "description": "Weekly portfolio rotation. Higher turnover, captures short-term trends.",
+    "universe": "nifty200",
+    "topN": 10,
+    "rebalanceFrequency": 5,
+    "lookbacks": [10, 21, 42, 63],
+    "symbolLimit": 50,
+    "initialCapital": 1000000
+  }
+]
