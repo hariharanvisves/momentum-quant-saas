@@ -64,20 +64,24 @@ async function run(params = {}) {
       const scores = []
       for (const sym of validSymbols) {
         const quotes = priceData[sym]
-        const closes = quotes.map((q) => q.close).filter((c) => c != null && c > 0)
         const matchIdx = quotes.findIndex((q) => q.date.toISOString().slice(0, 10) >= date)
         if (matchIdx < 0 || matchIdx < Math.max(...lookbacks)) continue
 
-        const closesUpToDate = closes.slice(0, matchIdx + 1)
+        const closesUpToDate = quotes.slice(0, matchIdx + 1)
+          .map((q) => q.close)
+          .filter((c) => c != null && c > 0)
+        if (closesUpToDate.length < Math.max(...lookbacks)) continue
+
         const momentum = calcMomentum(closesUpToDate, lookbacks)
 
         const logReturns = []
-        for (let j = 1; j <= matchIdx; j++) {
-          const r = Math.log(closes[j] / closes[j - 1])
+        for (let j = 1; j < closesUpToDate.length; j++) {
+          const r = Math.log(closesUpToDate[j] / closesUpToDate[j - 1])
           if (isFinite(r)) logReturns.push(r)
         }
         const vol = calcRollingVol(logReturns, logReturns.length - 1)
-        scores.push({ symbol: sym, score: momentum - vol, price: closes[matchIdx] })
+        const price = quotes[matchIdx].close
+        scores.push({ symbol: sym, score: momentum - vol, price: price || 0 })
       }
 
       scores.sort((a, b) => b.score - a.score)
