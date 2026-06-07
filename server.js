@@ -60,13 +60,49 @@ app.post("/api/optimize", handle(async (req, res) => {
   res.json(result)
 }))
 
+app.get("/api/kite/login", handle(async (req, res) => {
+  const url = await kite.getLoginURL()
+  res.json({ loginUrl: url })
+}))
+
+app.post("/api/kite/session", handle(async (req, res) => {
+  const { requestToken } = req.body
+  const session = await kite.generateSession(requestToken)
+  res.json({ accessToken: session.access_token })
+}))
+
+app.get("/api/kite/positions", handle(async (req, res) => {
+  const positions = await kite.getPositions()
+  res.json(positions)
+}))
+
+app.get("/api/kite/holdings", handle(async (req, res) => {
+  const holdings = await kite.getHoldings()
+  res.json(holdings)
+}))
+
 app.post("/api/rebalance", handle(async (req, res) => {
-  const { execute, universe = "nifty500" } = req.body
+  const { execute, dryRun = true, universe = "nifty500", capitalPerStock = 50000 } = req.body
   const result = await scanner.scan({ universe })
   if (execute) {
-    await kite.executeOrders(result.top20)
+    const orders = await kite.executeOrders(result.top20, { capitalPerStock, dryRun })
+    const insertOrder = db.prepare(`
+      INSERT INTO orders (scan_id, symbol, side, quantity, price, order_id, status, error)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+    const saveOrders = db.transaction(() => {
+      for (const o of orders) {
+        insertOrder.run(
+          result.scanId, o.symbol, "BUY", o.quantity || 0, o.price || null,
+          o.orderId || null, o.status, o.error || null
+        )
+      }
+    })
+    saveOrders()
+    res.json({ executed: true, dryRun, orders, data: result.top20 })
+  } else {
+    res.json({ executed: false, data: result.top20 })
   }
-  res.json({ executed: execute, data: result.top20 })
 }))
 
 app.get("/api/scans", handle(async (req, res) => {
