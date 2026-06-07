@@ -5,61 +5,72 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm start              # Run server (port 3000)
+# Backend
+npm start              # Run Express server (PORT env or 3000)
 npm run dev            # Run with nodemon (auto-reload)
+
+# Frontend (Vite + React)
+npm run frontend       # Dev server at :5173, proxies /api to :3000
+npm run frontend:build # Build React app into public/
+
+# Data
 npm run fetch-universes  # Refresh all stock universe JSON files
 npm run fetch-nifty500   # Refresh only NIFTY 500 universe
 ```
+
+Development requires two terminals: `npm run dev` + `npm run frontend`.
 
 No test runner or linter configured.
 
 ## Environment
 
-Create `.env` in root:
+Copy `.env.example` to `.env`:
 ```
-KITE_API_KEY=your_key
-KITE_ACCESS_TOKEN=your_token
-YF_QUERY_HOST=query1.finance.yahoo.com   # optional; falls back to query1
+KITE_API_KEY=           # Required for live trading
+KITE_API_SECRET=        # Required for Kite session generation
+KITE_ACCESS_TOKEN=      # Required for live trading
+YF_QUERY_HOST=query1.finance.yahoo.com  # Optional
+PORT=3000               # Optional
+DB_PATH=                # Optional, defaults to data/momentum.db
 ```
 
 ## Architecture
 
-Single Express server (`server.js`) with 5 endpoints, all backed by service modules:
+Express backend (`server.js`) + Vite/React frontend (`frontend/`). SQLite persistence via `db.js` (better-sqlite3, WAL mode). Shared Yahoo Finance fetch logic in `services/yahoo.js`.
 
-| Endpoint | Service | Status |
+### API Endpoints
+
+| Endpoint | Service | Notes |
 |---|---|---|
-| `GET /api/scanner?universe=nifty500` | `services/scanner.js` | Functional |
-| `POST /api/rebalance` `{ universe, execute }` | `scanner.js` → `kite.js` | Scanner real; Kite stub |
-| `POST /api/backtest` | `services/backtest.js` | Stub (returns placeholder) |
-| `POST /api/optimize` | `services/optimizer.js` | Stub (returns random values) |
-| `GET /api/universes` | reads `data/universes/*.json` | Functional |
+| `GET /api/scanner?universe=&limit=&topN=&lookbacks=` | `scanner.js` | Configurable, persists results to DB |
+| `GET /api/scans?universe=&limit=` | `db.js` | Scan history |
+| `GET /api/scans/:id` | `db.js` | Single scan with scores |
+| `POST /api/backtest` `{universe,symbolLimit,topN,rebalanceFrequency,lookbacks}` | `backtest.js` | Equity curve, CAGR, Sharpe, max DD |
+| `GET /api/backtests` | `db.js` | Backtest history |
+| `POST /api/optimize` `{universe,symbolLimit,grid}` | `optimizer.js` | Grid search over backtest params |
+| `POST /api/rebalance` `{execute,dryRun,universe,capitalPerStock}` | `scanner.js` → `kite.js` | Orders persisted to DB |
+| `GET /api/universes` | reads `data/universes/*.json` | |
+| `GET /api/kite/login` | `kite.js` | Returns Zerodha login URL |
+| `POST /api/kite/session` `{requestToken}` | `kite.js` | Exchange token for session |
+| `GET /api/kite/positions` | `kite.js` | |
+| `GET /api/kite/holdings` | `kite.js` | |
 
-### Momentum Algorithm (`services/scanner.js`)
+### Service Modules
 
-1. Load symbols from `data/universes/<name>.json`
-2. Fetch daily OHLCV from Yahoo Finance via `yahoo-finance2` (symbol appended with `.NS` for NSE)
-3. For each symbol with ≥200 data points:
-   - **Momentum** = sum of ROC at 21, 63, 126, 189 trading days
-   - **Volatility** = annualized std of log returns (252-day factor, sample n-1)
-   - **Score** = momentum − volatility
-4. Sort descending, return top 20
+- **`services/yahoo.js`** — Shared Yahoo Finance fetch with UA rotation, rate limiting (4s delay, 5-20s backoff), retry logic. Used by scanner and backtest.
+- **`services/scanner.js`** — Momentum algorithm: ROC at configurable lookbacks (default 21/63/126/189) minus annualized volatility. Scans full universe by default. Exports `calcMomentum`, `calcVolatility`, `loadUniverse` for reuse.
+- **`services/backtest.js`** — Historical simulation with periodic rebalancing. Fetches price data, runs momentum scoring at each rebalance, tracks equity curve. Calculates CAGR, Sharpe, max drawdown.
+- **`services/optimizer.js`** — Grid search over topN, rebalance frequency, and lookback sets. Runs backtest for each combination, ranks by Sharpe.
+- **`services/kite.js`** — Zerodha KiteConnect SDK wrapper. Auth flow, position sizing by capital-per-stock, dry run mode, order placement.
 
-Only 15 symbols are fetched per scan (`SCAN_LIMIT = 15`). 4s delay between requests; 5–20s exponential backoff on rate-limit errors. Yahoo Finance blocks bot UAs — 3 browser UAs are rotated per retry.
+### Persistence
+
+SQLite at `data/momentum.db`. Tables: `scan_results`, `scan_scores`, `backtest_results`, `orders`. Schema defined in `db.js`.
+
+### Frontend
+
+`frontend/` is a Vite + React 18 app with Recharts. Build output goes to `public/` (served by Express static). Components: ScannerPanel, BacktestPanel, OptimizerPanel, RebalancePanel, ResultsTable, ScoreChart, Layout.
 
 ### Stock Universes
 
-JSON files in `data/universes/` are arrays of ticker symbols (without `.NS`). Refreshed via scripts in `scripts/`. Available: `nifty50`, `nifty100`, `nifty200`, `nifty250`, `nifty500`.
-
-### Kite Integration (`services/kite.js`)
-
-Currently a stub — logs orders but doesn't call the Kite API. Needs `kiteconnect` npm package and real order placement logic. Called only when `execute: true` is passed to `/api/rebalance`.
-
-### Frontend (`public/index.html`)
-
-Single-file SPA. Calls the API endpoints above. Uses Chart.js 4.4 for any charts. No build step.
-
-### Stubs to Implement
-
-- `services/backtest.js` — described as needing DB cache + worker threads
-- `services/optimizer.js` — currently returns random Sharpe/CAGR; needs real parameter sweep against backtest
-- `services/kite.js` — needs actual Kite API order placement
+JSON arrays of ticker symbols (without `.NS`) in `data/universes/`. Available: nifty50, nifty100, nifty200, nifty250, nifty500. Refreshed via `scripts/fetch-universes.js`.
