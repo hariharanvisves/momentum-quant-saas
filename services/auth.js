@@ -142,4 +142,21 @@ async function resetPassword(token, newPassword) {
   return { message: "Password reset successfully. Please log in with your new password." }
 }
 
-module.exports = { register, login, verifyToken, getUser, invalidateSession, forgotPassword, resetPassword }
+async function changePassword(userId, currentPassword, newPassword) {
+  if (!currentPassword || !newPassword) throw appError("Current and new password required")
+  if (newPassword.length < 6) throw appError("New password must be at least 6 characters")
+  if (currentPassword === newPassword) throw appError("New password must be different from current password")
+
+  const user = db.prepare("SELECT * FROM users WHERE id = ?").get(userId)
+  if (!user) throw appError("User not found", 404)
+
+  const valid = await bcrypt.compare(currentPassword, user.password_hash)
+  if (!valid) throw appError("Current password is incorrect", 401)
+
+  const hash = await bcrypt.hash(newPassword, SALT_ROUNDS)
+  db.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, userId)
+
+  return { message: "Password changed successfully" }
+}
+
+module.exports = { register, login, verifyToken, getUser, invalidateSession, forgotPassword, resetPassword, changePassword }

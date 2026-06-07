@@ -17,6 +17,7 @@ import LoginPage from "./components/LoginPage"
 import RegisterPage from "./components/RegisterPage"
 import ForgotPasswordPage from "./components/ForgotPasswordPage"
 import ErrorBoundary from "./components/ErrorBoundary"
+import ProfilePage from "./components/ProfilePage"
 
 function AppContent({ mode, onToggleTheme }) {
   const { user, loading, logout } = useAuth()
@@ -50,6 +51,7 @@ function AppContent({ mode, onToggleTheme }) {
         {tab === "portfolio" && <PortfolioManager />}
         {tab === "sip" && <SipCalculator />}
         {tab === "intraday" && <IntradayScoring />}
+        {tab === "profile" && <ProfilePage user={user} />}
       </ErrorBoundary>
     </Layout>
   )

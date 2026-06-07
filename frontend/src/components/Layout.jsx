@@ -19,6 +19,7 @@ import SavingsIcon from "@mui/icons-material/Savings"
 import BoltIcon from "@mui/icons-material/Bolt"
 import LightModeIcon from "@mui/icons-material/LightMode"
 import DarkModeIcon from "@mui/icons-material/DarkMode"
+import PersonIcon from "@mui/icons-material/Person"
 
 const TABS = [
   { id: "scanner",    label: "Scanner",    icon: <SearchIcon sx={{ fontSize: 16 }} /> },
@@ -29,6 +30,7 @@ const TABS = [
   { id: "portfolio",  label: "Portfolio",  icon: <AccountBalanceWalletIcon sx={{ fontSize: 16 }} /> },
   { id: "sip",        label: "SIP Calc",   icon: <SavingsIcon sx={{ fontSize: 16 }} /> },
   { id: "intraday",   label: "Intraday",   icon: <BoltIcon sx={{ fontSize: 16 }} /> },
+  { id: "profile",    label: "Profile",    icon: <PersonIcon sx={{ fontSize: 16 }} /> },
 ]
 
 export default function Layout({ activeTab, onTabChange, user, onLogout, mode, onToggleTheme, children }) {

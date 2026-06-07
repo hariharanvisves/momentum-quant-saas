@@ -478,6 +478,12 @@ app.post("/api/auth/logout", requireAuth, handle(async (req, res) => {
   res.json({ success: true })
 }))
 
+app.put("/api/auth/password", requireAuth, handle(async (req, res) => {
+  const { currentPassword, newPassword } = req.body
+  const result = await auth.changePassword(req.user.id, currentPassword, newPassword)
+  res.json(result)
+}))
+
 const PORT = process.env.PORT || 3000
 
 // Global error handler — CORS rejections, malformed JSON bodies, and any unhandled
