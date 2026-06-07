@@ -56,7 +56,7 @@ app.get("/api/scanner", handle(async (req, res) => {
 }))
 
 app.post("/api/optimize", handle(async (req, res) => {
-  const result = await optimizer.run()
+  const result = await optimizer.run(req.body)
   res.json(result)
 }))
 
