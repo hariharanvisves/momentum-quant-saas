@@ -1,5 +1,6 @@
 
 require("dotenv").config()
+const db = require("./db")
 const express = require("express")
 const cors = require("cors")
 
@@ -55,6 +56,27 @@ app.post("/api/rebalance", handle(async (req, res) => {
     await kite.executeOrders(result.top20)
   }
   res.json({ executed: execute, data: result.top20 })
+}))
+
+app.get("/api/scans", handle(async (req, res) => {
+  const { universe, limit = 20 } = req.query
+  let query = `SELECT * FROM scan_results`
+  const params = []
+  if (universe) {
+    query += ` WHERE universe = ?`
+    params.push(universe)
+  }
+  query += ` ORDER BY scanned_at DESC LIMIT ?`
+  params.push(Number(limit))
+  const scans = db.prepare(query).all(...params)
+  res.json({ scans })
+}))
+
+app.get("/api/scans/:id", handle(async (req, res) => {
+  const scan = db.prepare("SELECT * FROM scan_results WHERE id = ?").get(req.params.id)
+  if (!scan) return res.status(404).json({ error: "Scan not found" })
+  const scores = db.prepare("SELECT * FROM scan_scores WHERE scan_id = ? ORDER BY rank").all(scan.id)
+  res.json({ ...scan, scores })
 }))
 
 const PORT = process.env.PORT || 3000
