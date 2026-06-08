@@ -166,8 +166,7 @@ function evalExpr(exprStr) {
       const op = consume().value
       const right = parseUnary()
       if (op === "/") {
-        // Division by zero: return +Infinity so the stock still ranks above those with negative scores
-        left = right === 0 ? Infinity : left / right
+        left = right === 0 ? 0 : left / right
       } else {
         left = left * right
       }
@@ -211,7 +210,7 @@ function evalExpr(exprStr) {
     throw new FormulaError(`Unexpected token after expression: ${JSON.stringify(tokens[pos])}`)
   }
 
-  return isFinite(result) ? result : (result === Infinity ? 9999 : 0)
+  return isFinite(result) ? result : 0
 }
 
 module.exports = { parse, FormulaError }

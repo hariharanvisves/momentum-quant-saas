@@ -12,7 +12,14 @@ export function AuthProvider({ children }) {
     if (token) {
       api.getMe()
         .then((data) => setUser(data.user))
-        .catch(() => { api.setAuthToken(null) })
+        .catch((err) => {
+          // Only clear session on explicit 401 (token expired/invalid)
+          // Network errors, 500s etc should not log out the user
+          if (err.status === 401 || err.message?.includes("401") || err.message?.includes("Authentication")) {
+            api.setAuthToken(null)
+          }
+          setUser(null)
+        })
         .finally(() => setLoading(false))
     } else {
       setLoading(false)

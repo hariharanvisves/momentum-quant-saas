@@ -85,13 +85,13 @@ export const api = {
   getSectors: () => request("/api/sectors"),
 
   scoreDownload: (scanId) =>
-    fetch(`/api/score/${scanId}/download`).then(res => {
+    fetch(`/api/score/${scanId}/download`, { headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} }).then(res => {
       if (!res.ok) throw new Error("Download failed")
       return res.blob()
     }),
 
   backtestDownload: (id) =>
-    fetch(`/api/backtests/${id}/download`).then(res => {
+    fetch(`/api/backtests/${id}/download`, { headers: authToken ? { Authorization: `Bearer ${authToken}` } : {} }).then(res => {
       if (!res.ok) throw new Error("Download failed")
       return res.blob()
     }),

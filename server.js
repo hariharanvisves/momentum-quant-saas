@@ -12,6 +12,7 @@ const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   : ["http://localhost:3000", "http://localhost:5173"]
 
 const app = express()
+app.set("trust proxy", 1)
 app.use(cors({
   origin: (origin, cb) => {
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true)
@@ -64,7 +65,7 @@ function makeRateLimiter(max, windowMs) {
     }
   }, 30 * 60 * 1000).unref()
   return (req, res, next) => {
-    const key = req.ip || "unknown"
+    const key = req.headers["x-forwarded-for"]?.split(",")[0].trim() || req.ip || "unknown"
     const now = Date.now()
     const rec = map.get(key)
     if (!rec || rec.reset < now) {
@@ -242,6 +243,9 @@ app.post("/api/strategies", validateStrategy, handle(async (req, res) => {
   const { name, formula, description } = req.body
   if (!name || !formula) return res.status(400).json({ error: "name and formula are required" })
 
+  const existing = db.prepare("SELECT id FROM strategies WHERE name = ?").get(name.trim())
+  if (existing) return res.status(409).json({ error: `Strategy named "${name.trim()}" already exists` })
+
   const { parse } = require("./services/formula")
   try {
     const compiled = parse(formula)
@@ -326,7 +330,9 @@ app.get("/api/score/:scanId/download", handle(async (req, res) => {
 app.get("/api/backtests/:id", handle(async (req, res) => {
   const bt = db.prepare("SELECT * FROM backtest_results WHERE id = ?").get(req.params.id)
   if (!bt) return res.status(404).json({ error: "Backtest not found" })
-  res.json({ ...bt, result: JSON.parse(bt.result_json) })
+  let result = {}
+  try { result = JSON.parse(bt.result_json) } catch (e) { result = {} }
+  res.json({ ...bt, result })
 }))
 
 app.get("/api/backtests/:id/download", handle(async (req, res) => {

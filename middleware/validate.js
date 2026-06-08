@@ -21,6 +21,7 @@ function validateBody(schema) {
       if (rule.type === "number") {
         const n = Number(val)
         if (isNaN(n)) return res.status(400).json({ error: `${field} must be a number` })
+        if (!isFinite(n)) return res.status(400).json({ error: `${field} must be a finite number` })
         if (rule.min !== undefined && n < rule.min) return res.status(400).json({ error: `${field} min is ${rule.min}` })
         if (rule.max !== undefined && n > rule.max) return res.status(400).json({ error: `${field} max is ${rule.max}` })
       }

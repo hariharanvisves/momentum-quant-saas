@@ -131,11 +131,19 @@ function getPerformance(portfolioId) {
   }
 }
 
+const applyPriceUpdates = db.transaction((updates) => {
+  for (const u of updates) {
+    db.prepare("UPDATE portfolio_holdings SET current_price=?, current_value=?, pnl=?, pnl_pct=? WHERE id=?")
+      .run(u.currentPrice, u.currentValue, u.pnl, u.pnlPct, u.id)
+  }
+})
+
 async function refreshPrices(portfolioId) {
   const holdings = db.prepare(
     "SELECT * FROM portfolio_holdings WHERE portfolio_id = ?"
   ).all(portfolioId)
   if (holdings.length === 0) return []
+  const pendingUpdates = []
   const updated = []
   for (const h of holdings) {
     try {
@@ -150,15 +158,20 @@ async function refreshPrices(portfolioId) {
       const currentValue = currentPrice * h.quantity
       const pnl = currentValue - investedValue
       const pnlPct = investedValue > 0 ? (pnl / investedValue) * 100 : 0
-      db.prepare(
-        "UPDATE portfolio_holdings SET current_price = ?, current_value = ?, pnl = ?, pnl_pct = ? WHERE id = ?"
-      ).run(currentPrice, +currentValue.toFixed(2), +pnl.toFixed(2), +pnlPct.toFixed(2), h.id)
+      pendingUpdates.push({
+        id: h.id,
+        currentPrice,
+        currentValue: +currentValue.toFixed(2),
+        pnl: +pnl.toFixed(2),
+        pnlPct: +pnlPct.toFixed(2),
+      })
       updated.push({ symbol: h.symbol, currentPrice })
     } catch (e) {
       console.warn(`Price refresh skip ${h.symbol}: ${e.message}`)
     }
     await delay(500)
   }
+  if (pendingUpdates.length > 0) applyPriceUpdates(pendingUpdates)
   return updated
 }
 

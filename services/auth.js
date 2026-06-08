@@ -3,7 +3,11 @@ const jwt = require("jsonwebtoken")
 const crypto = require("crypto")
 const db = require("../db")
 
-const JWT_SECRET = process.env.JWT_SECRET || "momentum-quant-dev-secret-change-in-prod"
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET && process.env.NODE_ENV === "production") {
+  throw new Error("JWT_SECRET environment variable is required in production")
+}
+const EFFECTIVE_JWT_SECRET = JWT_SECRET || "momentum-quant-dev-secret-CHANGE-BEFORE-PROD"
 const TOKEN_EXPIRY = "7d"
 const SALT_ROUNDS = 10
 
@@ -62,14 +66,14 @@ function generateToken(user) {
     // issued within the same second for the same user — prevents UNIQUE
     // constraint failures on the sessions table.
     { userId: user.id, email: user.email, plan: user.plan, jti: crypto.randomUUID() },
-    JWT_SECRET,
+    EFFECTIVE_JWT_SECRET,
     { expiresIn: TOKEN_EXPIRY }
   )
 }
 
 function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_SECRET)
+    return jwt.verify(token, EFFECTIVE_JWT_SECRET)
   } catch (e) {
     return null
   }
@@ -118,7 +122,7 @@ async function forgotPassword(email) {
   // In production: send email. Token returned in response for dev only.
   return {
     message: "Reset token generated. Use it to set a new password.",
-    token, // In production this would be emailed, not returned here
+    ...(process.env.NODE_ENV !== "production" && { token }), // dev only
     expiresIn: "1 hour",
   }
 }

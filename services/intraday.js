@@ -76,7 +76,8 @@ function _evalIntradayFormula(formulaStr, factorValues) {
 }
 
 async function fetchIntraday(symbol, interval = "5m") {
-  return yahooFinance.chart(symbol + ".NS", {
+  const ticker = symbol.endsWith(".NS") ? symbol : symbol + ".NS"
+  return yahooFinance.chart(ticker, {
     period1: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
     interval,
     includePrePost: false,
