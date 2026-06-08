@@ -51,7 +51,7 @@ Momentum Quant SaaS is a full-stack quantitative trading platform for Indian equ
 | `formula.js` | Recursive-descent parser/evaluator for text scoring formulas |
 | `indicators.js` | Technical indicators (Supertrend, etc.) used by backtest |
 | `intraday.js` | Intraday scoring via 5-minute bars |
-| `backtest.js` | Full historical backtest with periodic rebalancing, benchmark, 11 metrics |
+| `backtest.js` | Full historical backtest with periodic rebalancing, benchmark, 12 metrics |
 | `optimizer.js` | Grid search over backtest params; ranked by Sharpe |
 | `portfolio.js` | Portfolio CRUD + real-time P&L via Yahoo Finance price refresh |
 | `auth.js` | JWT register/login/logout, bcryptjs hashing, max 5 sessions/user (evicts oldest); exports `register`, `login`, `verifyToken`, `getUser`, `invalidateSession` |
@@ -100,7 +100,8 @@ POST /api/backtest
         ├─ simulate portfolio with equal-weight topN stocks
         ├─ benchmark: NIFTY 50 (^NSEI)
         ├─ computeMetrics(trades, equityCurve, capital)
-        │    → CAGR, Sharpe, max DD, win rate, Calmar, Sortino, +5 more
+        │    → totalReturn, CAGR, Sharpe, maxDrawdown, winRate, avgWinners/LosersROI,
+        │       biggestWinner/LoserROI, riskToReward, avgTradesPerYear, totalTrades
         └─ persist to backtest_results → return
 ```
 
@@ -146,6 +147,10 @@ Each factor maps a human-readable name to a pure function `(closes: number[]) �
 | `6 month volatility` | Annualized std-dev of log returns over 126 days |
 | `9 month volatility` | Annualized std-dev of log returns over 189 days |
 | `12 month volatility` | Annualized std-dev of log returns over 252 days |
+| `52 week high ratio` | close / 52-week high (0–1, closer to 1 = near high) |
+| `52 week low ratio` | close / 52-week low (≥1, higher = stronger recovery) |
+| `12 minus 1 month performance` | 12m return minus 1m return (avoids short-term reversal) |
+| `trend efficiency` | 12m performance / 12m volatility (risk-adjusted trend) |
 
 ## Stock Universes
 

@@ -71,6 +71,8 @@ const theme = createTheme({
           minHeight: 48,
           padding: "6px 16px",
           color: "#64748b",
+          transition: "color 0.15s ease",
+          "&:hover": { color: "#94a3b8" },
           "&.Mui-selected": { color: "#f1f5f9", fontWeight: 600 },
         },
       },
@@ -173,6 +175,7 @@ const theme = createTheme({
         root: {
           fontFamily: "'Outfit', sans-serif",
           borderRadius: 6,
+          transition: "border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease",
         },
         outlined: {
           borderColor: "rgba(255,255,255,0.12)",

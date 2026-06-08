@@ -383,7 +383,7 @@ export default function BacktestPanel() {
 
       {loading && (
         <Box>
-          <Typography variant="body2" color="text.secondary" mb={0.5}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
             Running backtest simulation — this may take a few minutes...
           </Typography>
           <LinearProgress />
@@ -455,12 +455,12 @@ export default function BacktestPanel() {
                   <Grid container spacing={2}>
                     <Grid item xs={4}><Typography variant="caption" color="text.secondary">Metric</Typography></Grid>
                     <Grid item xs={4}>
-                      <Typography variant="caption" color="primary.main" fontWeight={700}>
+                      <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700 }}>
                         Saved: {savedResult.universe} ({savedResult.startDate}→{savedResult.endDate})
                       </Typography>
                     </Grid>
                     <Grid item xs={4}>
-                      <Typography variant="caption" color="success.main" fontWeight={700}>Current</Typography>
+                      <Typography variant="caption" color="success.main" sx={{ fontWeight: 700 }}>Current</Typography>
                     </Grid>
                     {[
                       { label: "CAGR %", key: "cagr", higherBetter: true },
@@ -568,11 +568,11 @@ export default function BacktestPanel() {
       {/* Sample strategies */}
       <Paper sx={{ p: 2.5 }}>
         <Typography variant="subtitle1" gutterBottom>Explore Custom Backtest</Typography>
-        <Typography variant="body2" color="text.secondary" mb={1.5}>Try these preset strategies:</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>Try these preset strategies:</Typography>
         <Grid container spacing={1.5}>
           {SAMPLE_STRATEGIES.map((s, i) => (
             <Grid item xs={12} sm={6} key={i}>
-              <Card variant="outlined" sx={{ cursor: "pointer", "&:hover": { borderColor: "primary.main" } }}>
+              <Card variant="outlined" sx={{ cursor: "pointer", transition: "all 0.15s ease", "&:hover": { borderColor: "primary.main", backgroundColor: "rgba(59,130,246,0.04)" } }}>
                 <CardActionArea onClick={() => { setFormula(s.formula); setStrategyName(s.name) }}>
                   <CardContent sx={{ py: 1.5 }}>
                     <Typography variant="subtitle2">{s.name}</Typography>

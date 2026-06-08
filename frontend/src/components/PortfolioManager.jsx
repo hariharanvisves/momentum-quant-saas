@@ -119,7 +119,7 @@ export default function PortfolioManager() {
                 <CardActionArea onClick={() => setSelected(p.id)}>
                   <CardContent>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 0.5 }}>
-                      <Typography variant="subtitle1" fontWeight={600}>{p.name}</Typography>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{p.name}</Typography>
                       <IconButton size="small" color="error"
                         onClick={e => { e.stopPropagation(); handleDelete(p.id) }}
                         aria-label={`Delete portfolio ${p.name}`}

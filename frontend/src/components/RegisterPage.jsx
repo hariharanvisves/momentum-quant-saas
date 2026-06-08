@@ -50,35 +50,32 @@ export default function RegisterPage({ onSwitchToLogin }) {
       <Box sx={{ width: "100%", maxWidth: 420, px: 2 }}>
         <BrandMark />
         <Paper sx={cardSx}>
-          <Typography variant="h5" fontWeight={700} mb={0.5}>Create Account</Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>Create Account</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Start tracking momentum strategies
           </Typography>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={2.5}>
               <TextField
-                label="Email" type="email" value={email}
+                type="email" value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com" required fullWidth
+                placeholder="Email address" required fullWidth
                 autoComplete="email"
-                InputLabelProps={{ shrink: true }}
                 slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
               />
               <TextField
-                label="Password" type="password" value={password}
+                type="password" value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Min 6 characters" required fullWidth
+                placeholder="Password (min 6 characters)" required fullWidth
                 inputProps={{ minLength: 6 }}
                 autoComplete="new-password"
-                InputLabelProps={{ shrink: true }}
                 slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
               />
               <TextField
-                label="Confirm Password" type="password" value={confirm}
+                type="password" value={confirm}
                 onChange={e => setConfirm(e.target.value)}
-                placeholder="Repeat password" required fullWidth
+                placeholder="Confirm password" required fullWidth
                 autoComplete="new-password"
-                InputLabelProps={{ shrink: true }}
                 slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
               />
               {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
@@ -91,13 +88,17 @@ export default function RegisterPage({ onSwitchToLogin }) {
 
           <Divider sx={{ my: 2.5, borderColor: "rgba(255,255,255,0.06)" }} />
 
-          <Typography variant="body2" color="text.secondary" align="center">
-            Already have an account?{" "}
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+            <Typography variant="body2" color="text.secondary">
+              Already have an account?
+            </Typography>
             <Button variant="text" size="small" onClick={onSwitchToLogin}
-              sx={{ p: 0, minWidth: 0, fontWeight: 600, color: "primary.light", fontSize: "0.875rem" }}>
+              sx={{ p: 0, minWidth: 0, fontWeight: 600, color: "primary.light", fontSize: "0.875rem", lineHeight: 1.5,
+                transition: "color 0.15s ease",
+                "&:hover": { color: "#bfdbfe", backgroundColor: "transparent" } }}>
               Sign In
             </Button>
-          </Typography>
+          </Box>
         </Paper>
       </Box>
     </Box>

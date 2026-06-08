@@ -77,34 +77,32 @@ export default function LoginPage({ onSwitchToRegister, onForgotPassword }) {
             background: "linear-gradient(145deg, #111827 0%, #0f172a 100%)",
           }}
         >
-          <Typography variant="h5" fontWeight={700} mb={0.5}>Sign In</Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>Sign In</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Welcome back
           </Typography>
           <Box component="form" onSubmit={handleSubmit}>
             <Stack spacing={2.5}>
               <TextField
-                label="Email"
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="Email address"
                 required
                 fullWidth
                 autoComplete="email"
-                InputLabelProps={{ shrink: true }}
+                variant="outlined"
                 slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
               />
               <TextField
-                label="Password"
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Min 6 characters"
+                placeholder="Password"
                 required
                 fullWidth
                 autoComplete="current-password"
-                InputLabelProps={{ shrink: true }}
+                variant="outlined"
                 slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
               />
               {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
@@ -122,23 +120,28 @@ export default function LoginPage({ onSwitchToRegister, onForgotPassword }) {
 
           <Divider sx={{ my: 2.5, borderColor: "rgba(255,255,255,0.06)" }} />
 
-          <Stack spacing={1} alignItems="center">
-            <Typography variant="body2" color="text.secondary">
-              Don&apos;t have an account?{" "}
+          <Stack spacing={0.75} sx={{ alignItems: "center" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Typography variant="body2" color="text.secondary">
+                Don&apos;t have an account?
+              </Typography>
               <Button
                 variant="text"
                 size="small"
                 onClick={onSwitchToRegister}
-                sx={{ p: 0, minWidth: 0, fontWeight: 600, color: "primary.light", fontSize: "0.875rem" }}
+                sx={{ p: 0, minWidth: 0, fontWeight: 600, color: "primary.light", fontSize: "0.875rem", lineHeight: 1.5,
+                  transition: "color 0.15s ease",
+                  "&:hover": { color: "#bfdbfe", backgroundColor: "transparent" } }}
               >
                 Create account
               </Button>
-            </Typography>
+            </Box>
             <Button
               variant="text"
               size="small"
               onClick={onForgotPassword}
-              sx={{ p: 0, minWidth: 0, color: "text.secondary", fontSize: "0.8rem", "&:hover": { color: "text.primary" } }}
+              sx={{ p: 0, minWidth: 0, color: "text.secondary", fontSize: "0.8rem",
+                "&:hover": { color: "text.primary", backgroundColor: "transparent", textDecoration: "underline" } }}
             >
               Forgot password?
             </Button>

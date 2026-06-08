@@ -97,7 +97,7 @@ export default function OptimizerPanel() {
           {result.best && (
             <Paper sx={{ p: 2, border: "1px solid", borderColor: "primary.main" }}>
               <Typography variant="subtitle1" gutterBottom>Best Parameters (by Sharpe)</Typography>
-              <Grid container spacing={1.5} mb={1}>
+              <Grid container spacing={1.5} sx={{ mb: 1 }}>
                 {[
                   { label: "Top N", value: result.best.topN },
                   { label: "Rebal Freq", value: `${result.best.rebalanceFrequency}d` },

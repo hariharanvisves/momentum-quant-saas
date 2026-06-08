@@ -246,11 +246,21 @@ export default function App() {
           },
         },
       },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          input: {
+            // size="small" → 37px total height, matches Select height
+            paddingTop: "8.5px",
+            paddingBottom: "8.5px",
+          },
+        },
+      },
       MuiSelect: {
         styleOverrides: {
           select: {
-            paddingTop: "8px",
-            paddingBottom: "8px",
+            // Explicit match with TextField size="small" input padding
+            paddingTop: "8.5px",
+            paddingBottom: "8.5px",
           },
         },
       },

@@ -80,7 +80,7 @@ export default function QuantityCalculator({ scores, onClose }) {
           </FormControl>
         </Stack>
 
-        <Typography variant="caption" color="text.secondary" display="block" mb={1.5}>
+        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1.5 }}>
           {scores.length} stocks &nbsp;|&nbsp;
           ₹{scores.length > 0 ? Math.round(capital / scores.length).toLocaleString() : 0} per stock &nbsp;|&nbsp;
           Cash remaining: ₹{cashRemaining.toLocaleString()}

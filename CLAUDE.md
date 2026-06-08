@@ -45,10 +45,12 @@ Express backend (`server.js`) + Vite/React frontend (`frontend/`). SQLite persis
 #### Public / Rate-limited
 | Endpoint | Notes |
 |---|---|
+| `GET /health` | Health check |
 | `GET /api/scanner?universe=&limit=&topN=&lookbacks=&formula=` | Momentum scan, persists to DB. Heavy rate limit. |
 | `POST /api/score` `{formula,universe,limit,topN,priceMin,priceMax,page,pageSize}` | Custom formula scoring. Heavy rate limit. |
-| `POST /api/backtest` `{universe,symbolLimit,topN,rebalanceFrequency,lookbacks,formula}` | Backtest with equity curve + 11 metrics. Heavy rate limit. |
+| `POST /api/backtest` `{universe,symbolLimit,topN,rebalanceFrequency,lookbacks,formula}` | Backtest with equity curve + 12 metrics. Heavy rate limit. |
 | `GET /api/backtests` | Last 20 backtest results |
+| `GET /api/backtests/:id` | Single backtest result |
 | `GET /api/backtests/:id/download` | CSV export of equity curve |
 | `POST /api/optimize` `{universe,symbolLimit,grid}` | Grid search, ranked by Sharpe. Heavy rate limit. |
 | `GET /api/scans?universe=&limit=` | Scan history |
@@ -57,6 +59,7 @@ Express backend (`server.js`) + Vite/React frontend (`frontend/`). SQLite persis
 | `GET /api/universes` | List available universe names |
 | `GET /api/sectors` | Sector map from `data/sectors.json` |
 | `GET /api/presets` | Preset strategies from `data/presets.json` |
+| `GET /api/factors` | List all 14 built-in factor names |
 | `POST /api/score/intraday` | Intraday scoring (5-min bars) |
 
 #### Kite / Zerodha
@@ -96,18 +99,21 @@ Express backend (`server.js`) + Vite/React frontend (`frontend/`). SQLite persis
 | `POST /api/auth/register` `{email,password}` | Register; rate limited (10/15 min) |
 | `POST /api/auth/login` `{email,password}` | Login; returns JWT |
 | `GET /api/auth/me` | Current user (requires auth) |
-| `POST /api/auth/logout` | Invalidate session token |
+| `POST /api/auth/logout` | Invalidate session token (requires auth) |
+| `PUT /api/auth/password` `{currentPassword,newPassword}` | Change password (requires auth) |
+| `POST /api/auth/forgot-password` `{email}` | Send reset link; rate limited |
+| `POST /api/auth/reset-password` `{token,newPassword}` | Complete password reset; rate limited |
 
 ### Service Modules
 
 - **`services/yahoo.js`** — Yahoo Finance fetch with UA rotation, 4s delay, 5-20s backoff on 429, 4 retries. Exports `fetchChart`, `delay`, `isSkippable`.
 - **`services/scanner.js`** — Legacy momentum scan: ROC at configurable lookbacks (default 21/63/126/189) minus annualized volatility. Exports `calcMomentum`, `calcVolatility`, `loadUniverse`.
 - **`services/scoring.js`** — Formula-driven scoring engine: loads universe, fetches prices, calls `factors.computeAll`, evaluates formula, paginates, persists to `scan_results`/`scan_scores`.
-- **`services/factors.js`** — Pure factor functions over `closes[]`: performance and volatility at 1/3/6/9/12 month windows. Returns 0 on insufficient data. Exports `computeAll`, `FACTOR_REGISTRY`, `getFactorNames`.
+- **`services/factors.js`** — Pure factor functions over `closes[]`: 14 factors (performance/volatility at 1/3/6/9/12 months, 52-week high/low ratios, 12-minus-1 month, trend efficiency). Returns 0 on insufficient data. Exports `computeAll`, `FACTOR_REGISTRY`, `getFactorNames`.
 - **`services/formula.js`** — Recursive-descent text formula parser/evaluator. Supports `+`, `-`, `*`, `/`, parentheses, percentage weights. Throws `FormulaError` on invalid input. Exports `parse`, `FormulaError`.
 - **`services/indicators.js`** — Technical indicators (e.g. `calcSupertrend`). Used by backtest engine.
 - **`services/intraday.js`** — Intraday scoring using 5-minute Yahoo Finance bars. Scores stocks on short-term momentum/volatility. Exports `score`.
-- **`services/backtest.js`** — Full historical backtest: periodic rebalancing, benchmark (NIFTY 50), 11 metrics (CAGR, Sharpe, max DD, win rate, etc.), formula support. Exports `run`, `computeMetrics`, `scoreStock`.
+- **`services/backtest.js`** — Full historical backtest: periodic rebalancing, benchmark (NIFTY 50), 12 metrics (totalReturn, CAGR, Sharpe, maxDrawdown, winRate, avgWinners/LosersROI, biggestWinner/LoserROI, riskToReward, avgTradesPerYear, totalTrades), formula support. Exports `run`, `computeMetrics`, `scoreStock`.
 - **`services/optimizer.js`** — Grid search over topN, rebalance frequency, lookback sets. Ranks by Sharpe. Exports `run`.
 - **`services/portfolio.js`** — Portfolio CRUD + P&L: `create`, `get`, `list`, `update`, `remove`, `addHolding`, `removeHolding`, `getPerformance`, `refreshPrices`. Max 5 portfolios per user (enforced in `create`).
 - **`services/auth.js`** — JWT auth: `register`, `login`, `verifyToken`, `getUser`, `invalidateSession`. bcryptjs password hashing. Max 5 sessions per user; oldest evicted when cap reached. Token expiry: 7 days.

@@ -72,19 +72,25 @@ export default function Layout({ activeTab, onTabChange, user, onLogout, mode, o
             <Typography
               variant="h6"
               component="h1"
-              sx={{
+              sx={mode === "dark" ? {
                 fontWeight: 800,
                 fontSize: "1.15rem",
                 lineHeight: 1.1,
                 letterSpacing: "-0.03em",
                 background: "linear-gradient(90deg, #f1f5f9 0%, #94a3b8 100%)",
-                WebkitBackgroundClip: mode === "dark" ? "text" : "unset",
-                WebkitTextFillColor: mode === "dark" ? "transparent" : "unset",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              } : {
+                fontWeight: 800,
+                fontSize: "1.15rem",
+                lineHeight: 1.1,
+                letterSpacing: "-0.03em",
+                color: "text.primary",
               }}
             >
               Momentum Quant
             </Typography>
-            <Typography variant="caption" sx={{ color: "#475569", letterSpacing: "0.02em", fontSize: "0.72rem" }}>
+            <Typography variant="caption" sx={{ color: "text.secondary", letterSpacing: "0.02em", fontSize: "0.72rem" }}>
               NIFTY Momentum Scanner & Backtester
             </Typography>
           </Box>
@@ -105,8 +111,12 @@ export default function Layout({ activeTab, onTabChange, user, onLogout, mode, o
               >
                 {initials}
               </Avatar>
-              <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", alignItems: "flex-start", gap: 0.25 }}>
-                <Typography sx={{ color: "#64748b", fontSize: "0.72rem", lineHeight: 1, fontFamily: "'Outfit', sans-serif" }}>
+              <Box sx={{ display: { xs: "none", sm: "flex" }, flexDirection: "column", alignItems: "flex-start", gap: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  component="p"
+                  sx={{ color: "text.secondary", lineHeight: 1.2, fontFamily: "'Outfit', sans-serif", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                >
                   {user.email}
                 </Typography>
                 <Chip
@@ -144,9 +154,7 @@ export default function Layout({ activeTab, onTabChange, user, onLogout, mode, o
                   px: 1.5,
                   py: 0.5,
                   fontSize: "0.75rem",
-                  borderColor: "rgba(239,68,68,0.3)",
-                  color: "#f87171",
-                  "&:hover": { borderColor: "#ef4444", backgroundColor: "rgba(239,68,68,0.08)" },
+                  "&:hover": { backgroundColor: "rgba(239,68,68,0.08)" },
                 }}
               >
                 Sign Out
@@ -159,12 +167,12 @@ export default function Layout({ activeTab, onTabChange, user, onLogout, mode, o
       {/* ── Navigation ── */}
       <Box
         sx={{
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid",
+          borderBottom: "1px solid",
+          borderColor: "divider",
           mb: 3,
           mx: -2.5,
           px: 2.5,
-          background: "linear-gradient(180deg, rgba(255,255,255,0.015) 0%, transparent 100%)",
         }}
       >
         <Tabs
