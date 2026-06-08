@@ -138,7 +138,13 @@ app.get("/api/scanner", heavyRateLimit, handle(async (req, res) => {
   const formula = req.query.formula || null
   const config = {}
   if (req.query.topN) config.topN = Number(req.query.topN)
-  if (req.query.lookbacks) config.lookbacks = req.query.lookbacks.split(",").map(Number)
+  if (req.query.lookbacks) {
+    const parsed = req.query.lookbacks.split(",").map(Number)
+    if (parsed.some(n => !isFinite(n) || n <= 0)) {
+      return res.status(400).json({ error: "lookbacks must be comma-separated positive integers e.g. 21,63,126" })
+    }
+    config.lookbacks = parsed
+  }
   const result = await scanner.scan({ universe, limit, formula, config })
   res.json(result)
 }))
@@ -445,7 +451,7 @@ app.get("/api/presets", handle(async (req, res) => {
 }))
 
 // --- Intraday scoring ---
-app.post("/api/score/intraday", handle(async (req, res) => {
+app.post("/api/score/intraday", heavyRateLimit, handle(async (req, res) => {
   const result = await intraday.score(req.body)
   res.json(result)
 }))
