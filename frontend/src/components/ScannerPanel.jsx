@@ -269,7 +269,7 @@ export default function ScannerPanel() {
               </TableHead>
               <TableBody>
                 {paginatedScores.map(row => (
-                  <TableRow key={row.symbol}>
+                  <TableRow key={`${row.symbol}-${row.rank}`}>
                     <TableCell sx={{ color: "text.secondary", width: 44, fontFamily: "'JetBrains Mono', monospace", fontSize: "0.8rem" }}>
                       {row.rank}
                     </TableCell>

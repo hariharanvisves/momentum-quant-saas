@@ -116,7 +116,7 @@ export default function RebalancePanel() {
                   </TableHead>
                   <TableBody>
                     {result.orders.map((o, i) => (
-                      <TableRow key={i}>
+                      <TableRow key={o.symbol || i}>
                         <TableCell sx={{ color: "primary.main", fontWeight: 600 }}>{o.symbol}</TableCell>
                         <TableCell>
                           <Chip

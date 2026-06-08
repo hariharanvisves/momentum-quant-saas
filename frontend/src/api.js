@@ -17,9 +17,14 @@ async function request(path, opts = {}) {
     headers["Authorization"] = `Bearer ${authToken}`
   }
   const res = await fetch(BASE + path, { ...opts, headers })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error || "Request failed")
-  return data
+  if (!res.ok) {
+    let errMsg = "Request failed"
+    try { const data = await res.json(); errMsg = data.error || errMsg } catch {}
+    const err = new Error(errMsg)
+    err.status = res.status
+    throw err
+  }
+  return res.json()
 }
 
 export const api = {

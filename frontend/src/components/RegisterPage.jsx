@@ -7,6 +7,21 @@ import TextField from "@mui/material/TextField"
 import Button from "@mui/material/Button"
 import Alert from "@mui/material/Alert"
 import Stack from "@mui/material/Stack"
+import Divider from "@mui/material/Divider"
+
+const BrandMark = () => (
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 4, justifyContent: "center" }}>
+    <Box sx={{ width: 40, height: 40, borderRadius: 2.5, background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 28px rgba(59,130,246,0.4)", flexShrink: 0 }}>
+      <Box component="span" sx={{ fontWeight: 900, fontSize: "1.1rem", color: "#fff", fontFamily: "'Outfit', sans-serif", lineHeight: 1 }}>M</Box>
+    </Box>
+    <Box>
+      <Typography sx={{ fontWeight: 800, fontSize: "1.1rem", lineHeight: 1.1, letterSpacing: "-0.03em", background: "linear-gradient(90deg, #f1f5f9 0%, #94a3b8 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Outfit', sans-serif" }}>Momentum Quant</Typography>
+      <Typography variant="caption" sx={{ color: "#475569", letterSpacing: "0.02em", fontSize: "0.7rem" }}>NIFTY Momentum Scanner</Typography>
+    </Box>
+  </Box>
+)
+
+const cardSx = { p: 4, border: "1px solid rgba(255,255,255,0.1)", borderRadius: 3, boxShadow: "0 24px 64px rgba(0,0,0,0.5)", background: "linear-gradient(145deg, #111827 0%, #0f172a 100%)" }
 
 export default function RegisterPage({ onSwitchToLogin }) {
   const { register } = useAuth()
@@ -31,62 +46,60 @@ export default function RegisterPage({ onSwitchToLogin }) {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80vh" }}>
-      <Paper sx={{ p: 4, width: "100%", maxWidth: 400 }}>
-        <Typography variant="h5" fontWeight={700} mb={0.5}>Create Account</Typography>
-        <Typography variant="body2" color="text.secondary" mb={3}>
-          Start tracking momentum strategies
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={2}>
-            <TextField
-              label="Email"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              fullWidth
-              slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
-            />
-            <TextField
-              label="Password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Min 6 characters"
-              required
-              inputProps={{ minLength: 6 }}
-              fullWidth
-              slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
-            />
-            <TextField
-              label="Confirm Password"
-              type="password"
-              value={confirm}
-              onChange={e => setConfirm(e.target.value)}
-              placeholder="Repeat password"
-              required
-              fullWidth
-              slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
-            />
-            {error && <Alert severity="error">{error}</Alert>}
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              sx={{ py: 1, fontSize: "1rem" }}
-            >
-              {loading ? "Creating..." : "Create Account"}
+    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", backgroundColor: "background.default" }}>
+      <Box sx={{ width: "100%", maxWidth: 420, px: 2 }}>
+        <BrandMark />
+        <Paper sx={cardSx}>
+          <Typography variant="h5" fontWeight={700} mb={0.5}>Create Account</Typography>
+          <Typography variant="body2" color="text.secondary" mb={3}>
+            Start tracking momentum strategies
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit}>
+            <Stack spacing={2.5}>
+              <TextField
+                label="Email" type="email" value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com" required fullWidth
+                autoComplete="email"
+                InputLabelProps={{ shrink: true }}
+                slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
+              />
+              <TextField
+                label="Password" type="password" value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Min 6 characters" required fullWidth
+                inputProps={{ minLength: 6 }}
+                autoComplete="new-password"
+                InputLabelProps={{ shrink: true }}
+                slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
+              />
+              <TextField
+                label="Confirm Password" type="password" value={confirm}
+                onChange={e => setConfirm(e.target.value)}
+                placeholder="Repeat password" required fullWidth
+                autoComplete="new-password"
+                InputLabelProps={{ shrink: true }}
+                slotProps={{ input: { sx: { fontFamily: "'Outfit', sans-serif" } } }}
+              />
+              {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
+              <Button type="submit" variant="contained" fullWidth disabled={loading}
+                sx={{ py: 1.25, fontSize: "0.95rem", fontWeight: 600, borderRadius: 2, mt: 0.5 }}>
+                {loading ? "Creating…" : "Create Account"}
+              </Button>
+            </Stack>
+          </Box>
+
+          <Divider sx={{ my: 2.5, borderColor: "rgba(255,255,255,0.06)" }} />
+
+          <Typography variant="body2" color="text.secondary" align="center">
+            Already have an account?{" "}
+            <Button variant="text" size="small" onClick={onSwitchToLogin}
+              sx={{ p: 0, minWidth: 0, fontWeight: 600, color: "primary.light", fontSize: "0.875rem" }}>
+              Sign In
             </Button>
-          </Stack>
-        </Box>
-        <Typography variant="body2" color="text.secondary" align="center" mt={2}>
-          Already have an account?{" "}
-          <Button variant="text" size="small" onClick={onSwitchToLogin} sx={{ textDecoration: "underline", p: 0, minWidth: 0 }}>Sign In</Button>
-        </Typography>
-      </Paper>
+          </Typography>
+        </Paper>
+      </Box>
     </Box>
   )
 }

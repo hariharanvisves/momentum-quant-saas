@@ -104,8 +104,7 @@ function EquityChart({ chartData }) {
 
     return () => {
       ro.disconnect()
-      chart.remove()
-      chartRef.current = null
+      if (chartRef.current) { chartRef.current.remove(); chartRef.current = null }
     }
   }, [chartData])
 
@@ -445,7 +444,7 @@ export default function BacktestPanel() {
               </Paper>
 
               {/* Comparison section */}
-              {savedResult && result && savedResult !== result && (
+              {savedResult && result && (savedResult.ran_at !== result.ran_at || savedResult.id !== result.id) && (
                 <Paper sx={{ p: 2.5 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                     <Typography variant="subtitle1">Comparison</Typography>

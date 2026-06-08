@@ -40,6 +40,10 @@ export default function PortfolioDetail({ portfolioId, onBack }) {
 
   async function handleAddHolding() {
     if (!addForm.symbol || !addForm.quantity || !addForm.entry_price) return
+    const qty = Number(addForm.quantity)
+    const price = Number(addForm.entry_price)
+    if (!Number.isInteger(qty) || qty < 1) { setError("Quantity must be a positive integer"); return }
+    if (!isFinite(price) || price <= 0) { setError("Entry price must be a positive number"); return }
     try {
       await api.addHolding(portfolioId, {
         symbol: addForm.symbol.toUpperCase(), quantity: Number(addForm.quantity),
@@ -87,7 +91,7 @@ export default function PortfolioDetail({ portfolioId, onBack }) {
         </Button>
       </Stack>
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
 
       <Grid container spacing={1.5}>
         {[

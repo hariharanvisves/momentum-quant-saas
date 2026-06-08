@@ -141,7 +141,7 @@ export default function IntradayScoring() {
                   </TableHead>
                   <TableBody>
                     {result.results.map((r, i) => (
-                      <TableRow key={r.symbol}>
+                      <TableRow key={`${r.symbol}-${i}`}>
                         <TableCell sx={{ color: "text.secondary", width: 40 }}>{i + 1}</TableCell>
                         <TableCell sx={{ color: "primary.main", fontWeight: 600 }}>{r.symbol}</TableCell>
                         <TableCell sx={{ color: r.score >= 0 ? "success.main" : "error.main" }}>{r.score.toFixed(4)}</TableCell>
