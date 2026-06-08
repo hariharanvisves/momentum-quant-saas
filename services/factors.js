@@ -98,11 +98,10 @@ const FACTOR_REGISTRY = {
   //  Trend efficiency = 12m performance / (12m volatility * sqrt(252))
   //    Sharpe-like ratio using annual return vs annual vol.
   //    Higher = stronger risk-adjusted trend.
-  //    Returns 9999 when volatility is zero (see formula.js div/0 rule).
   "trend efficiency": (closes) => {
     const perf = performance(closes, 12)
     const vol  = volatility(closes, 12)
-    if (vol <= 0) return 9999
+    if (vol <= 0) return 0
     const r = perf / vol
     return isFinite(r) ? r : 0
   },

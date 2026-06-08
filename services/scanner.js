@@ -99,11 +99,9 @@ async function scan(opts = {}) {
     try {
       result = await fetchChart(symbol, { retries: config.retries })
     } catch (e) {
-      if (isSkippable(e)) {
-        console.warn(`Skip ${symbol}: ${e.message}`)
-        continue
-      }
-      throw e
+      // Skip delisted/not-found and network errors — don't crash entire scan
+      console.warn(`Skip ${symbol}: ${e.message}`)
+      continue
     }
 
     const data = result?.quotes ?? []

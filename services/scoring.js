@@ -63,11 +63,9 @@ async function score(opts = {}) {
     try {
       result = await fetchChart(symbol, { retries: config.retries })
     } catch (e) {
-      if (isSkippable(e)) {
-        console.warn(`Score skip ${symbol}: ${e.message}`)
-        continue
-      }
-      throw e
+      // Skip delisted/not-found and network errors — don't crash entire score run
+      console.warn(`Score skip ${symbol}: ${e.message}`)
+      continue
     }
 
     const data = result?.quotes ?? []

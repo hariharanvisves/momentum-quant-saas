@@ -79,7 +79,7 @@ export default function ScannerPanel() {
         ...s,
         rank: i + 1,
         sector: sectorMap[s.symbol] || "—",
-        indexBadge: universe.replace("nifty", "N"),
+        indexBadge: { nifty50: "N50", nifty100: "N100", nifty200: "N200", nifty250: "N250", nifty500: "N500" }[universe] || universe.toUpperCase(),
       }))
       if (sector) {
         enriched = enriched.filter(s => s.sector === sector)
